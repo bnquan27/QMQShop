@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('qmq_theme') || 'dark')</script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>So sánh sản phẩm — QMQSHOP</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-inner">
+      <a href="/" class="logo">
+        <img src="../assets/logo.png" alt="" class="logo-img" />
+        <div class="logo-text">
+          <span class="logo-brand">QMQ<span>SHOP</span></span>
+          <span class="logo-sub">SINCE 2026</span>
+        </div>
+      </a>
+      <div class="header-tools" id="auth-header-section"></div>
+    </div>
+  </header>
+
+  <main class="container" style="padding:30px 20px;">
+    <h1 style="font-size:24px;letter-spacing:2px;margin-bottom:24px;">
+      <i class="fa-solid fa-scale-balanced" style="color:var(--accent);"></i> SO SÁNH SẢN PHẨM
+    </h1>
+
+    <div id="compare-loading" class="loading-center">
+      <div class="spinner"></div>
+      <span>Đang tải...</span>
+    </div>
+
+    <div id="compare-empty" style="display:none;" class="cart-empty">
+      <i class="fa-regular fa-scale-balanced"></i>
+      <h3>Chưa có sản phẩm so sánh</h3>
+      <p>Thêm sản phẩm vào danh sách so sánh để xem bên cạnh nhau</p>
+      <a href="/products.html" class="btn-primary">Xem sản phẩm</a>
+    </div>
+
+    <div id="compare-content" style="display:none;">
+      <div class="compare-cat-label" id="compare-cat-label"></div>
+      <div style="overflow-x:auto;">
+        <table class="compare-grid" id="compare-table"></table>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/compare.js"></script>
+  <script>
+    async function renderCompare() {
+      document.getElementById('compare-loading').style.display = 'none';
+
+      const products = Compare.getItems();
+      if (products.length === 0) {
+        document.getElementById('compare-empty').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('compare-content').style.display = 'block';
+
+      // Show category
+      document.getElementById('compare-cat-label').innerHTML = '<i class="fa-solid fa-layer-group"></i> Danh mục: <strong>' + (products[0].category_name || '') + '</strong>';
+
+      // Build spec keys from all products
+      const allKeys = new Set();
+      products.forEach(p => { if (p.specs) Object.keys(p.specs).forEach(k => allKeys.add(k)); });
+      const specKeys = ['Hình ảnh', 'Tên sản phẩm', 'Giá', ...Array.from(allKeys)];
+
+      const table = document.getElementById('compare-table');
+      table.style.gridTemplateColumns = `200px repeat(${products.length}, minmax(240px, 1fr))`;
+      table.innerHTML = specKeys.map(key => {
+        const label = `<div class="compare-label">${key}</div>`;
+        const cells = products.map(p => {
+          if (key === 'Hình ảnh') {
+            return `<div class="compare-cell" style="padding:0;justify-content:center;"><img src="${p.product_image || ''}" alt="${p.product_name}" /></div>`;
+          }
+          if (key === 'Tên sản phẩm') {
+            return `<div class="compare-cell" style="flex-direction:column;align-items:flex-start;gap:8px;">
+              <a href="/product.html?id=${p.product_id}" style="font-weight:600;color:var(--text-primary);">${p.product_name}</a>
+              <button class="btn-ghost" style="color:#dc2626;font-size:12px;padding:4px 0;" onclick="removeProduct(${p.product_id})"><i class="fa-regular fa-trash-can"></i> Xoá</button>
+            </div>`;
+          }
+          if (key === 'Giá') {
+            return `<div class="compare-cell"><span class="price-current" style="font-size:18px;">${formatPrice(p.product_price)}</span></div>`;
+          }
+          return `<div class="compare-cell">${p.specs && p.specs[key] || '—'}</div>`;
+        });
+        return label + cells.join('');
+      }).join('');
+    }
+
+    async function removeProduct(productId) {
+      await Compare.remove(productId);
+      renderCompare();
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await Auth.init();
+      Auth.updateHeader();
+      await Compare.load();
+      renderCompare();
+    });
+  </script>
+</body>
+</html>

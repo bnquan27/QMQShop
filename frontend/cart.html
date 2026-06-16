@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('qmq_theme') || 'dark')</script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Giỏ hàng — QMQSHOP</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-inner">
+      <button class="hamburger" onclick="document.querySelector('.category-nav').classList.toggle('show')"><span></span><span></span><span></span></button>
+      <a href="/" class="logo">
+        <img src="../assets/logo.png" alt="" class="logo-img" />
+        <div class="logo-text">
+          <span class="logo-brand">QMQ<span>SHOP</span></span>
+          <span class="logo-sub">SINCE 2026</span>
+        </div>
+      </a>
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" placeholder="Tìm sản phẩm..." onkeydown="if(event.key==='Enter'&&this.value.trim()) window.location.href='/products.html?search='+encodeURIComponent(this.value.trim())" />
+      </div>
+      <div class="header-tools" id="auth-header-section"></div>
+    </div>
+  </header>
+
+  <main class="container cart-page">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+      <h1 style="font-size:24px;letter-spacing:2px;"><i class="fa-solid fa-bag-shopping" style="color:var(--accent);"></i> GIỎ HÀNG</h1>
+    </div>
+
+    <div id="cart-loading" class="loading-center">
+      <div class="spinner"></div>
+      <span>Đang tải giỏ hàng...</span>
+    </div>
+
+    <div id="cart-empty" class="cart-empty" style="display:none;">
+      <i class="fa-regular fa-cart-shopping"></i>
+      <h3>Giỏ hàng trống</h3>
+      <p>Bạn chưa có sản phẩm nào trong giỏ hàng</p>
+      <a href="/products.html" class="btn-primary">Mua sắm ngay</a>
+    </div>
+
+    <div id="cart-content" style="display:none;">
+      <table class="cart-table">
+        <thead>
+          <tr>
+            <th style="width:80px;"></th>
+            <th>Sản phẩm</th>
+            <th style="width:120px;">Đơn giá</th>
+            <th style="width:120px;">Số lượng</th>
+            <th style="width:120px;">Thành tiền</th>
+            <th style="width:50px;"></th>
+          </tr>
+        </thead>
+        <tbody id="cart-items"></tbody>
+      </table>
+
+      <div class="cart-total">
+        <span class="cart-total-label">Tổng cộng:</span>
+        <span class="cart-total-amount" id="cart-total-price">0₫</span>
+        <a href="/checkout.html" class="btn-primary">Thanh toán <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <span class="logo-brand">QMQ<span>SHOP</span></span>
+          <p style="margin-top:8px;color:var(--text-secondary);font-size:14px;">Laptop, PC Gaming & Linh Kiện Chính Hãng.</p>
+        </div>
+        <div class="footer-col">
+          <h5>Danh mục</h5>
+          <a href="/products.html?category=1">Laptop Gaming</a>
+          <a href="/products.html?category=2">PC Gaming</a>
+          <a href="/products.html?category=3">PC Văn Phòng</a>
+          <a href="/products.html?category=4">Linh Kiện</a>
+        </div>
+      </div>
+      <div class="footer-bottom"><span>&copy; 2026 QMQSHOP</span></div>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/compare.js"></script>
+  <script>
+    async function loadCart() {
+      if (!Auth.isLoggedIn()) {
+        document.getElementById('cart-loading').style.display = 'none';
+        document.getElementById('cart-empty').style.display = 'block';
+        document.getElementById('cart-empty').querySelector('p').textContent = 'Vui lòng đăng nhập để xem giỏ hàng';
+        document.getElementById('cart-empty').querySelector('a').textContent = 'Đăng nhập';
+        document.getElementById('cart-empty').querySelector('a').href = '/auth.html';
+        return;
+      }
+
+      try {
+        const items = await Cart.load();
+        document.getElementById('cart-loading').style.display = 'none';
+
+        if (items.length === 0) {
+          document.getElementById('cart-empty').style.display = 'block';
+          return;
+        }
+
+        document.getElementById('cart-content').style.display = 'block';
+        const tbody = document.getElementById('cart-items');
+        tbody.innerHTML = items.map(item => {
+          const subtotal = item.product_price * item.quantity;
+          return `
+            <tr>
+              <td><img src="${item.product_image || ''}" alt="" class="cart-item-img" /></td>
+              <td>
+                <div class="cart-item-info">
+                  <h4><a href="/product.html?id=${item.product_id}" style="color:var(--text-primary);">${item.product_name}</a></h4>
+                  <p>SL: ${item.stock} có sẵn</p>
+                </div>
+              </td>
+              <td class="price-current" style="font-family:var(--font-display);">${formatPrice(item.product_price)}</td>
+              <td>
+                <div class="qty-btn">
+                  <button onclick="updateQty(${item.id}, ${item.quantity - 1})"><i class="fa-solid fa-minus"></i></button>
+                  <span>${item.quantity}</span>
+                  <button onclick="updateQty(${item.id}, ${item.quantity + 1})"><i class="fa-solid fa-plus"></i></button>
+                </div>
+              </td>
+              <td style="font-family:var(--font-display);color:var(--accent);">${formatPrice(subtotal)}</td>
+              <td>
+                <button class="btn-ghost" style="color:#dc2626;" onclick="removeItem(${item.id})"><i class="fa-regular fa-trash-can"></i></button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        document.getElementById('cart-total-price').textContent = formatPrice(Cart.getTotal());
+      } catch (err) {
+        document.getElementById('cart-loading').innerHTML = `<span>Lỗi: ${err.message}</span>`;
+      }
+    }
+
+    async function updateQty(id, qty) {
+      if (qty < 1) {
+        await Cart.remove(id);
+      } else {
+        await Cart.update(id, qty);
+      }
+      loadCart();
+    }
+
+    async function removeItem(id) {
+      await Cart.remove(id);
+      loadCart();
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await Auth.init();
+      Auth.updateHeader();
+      await Compare.load();
+      loadCart();
+    });
+  </script>
+</body>
+</html>

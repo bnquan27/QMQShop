@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('qmq_theme') || 'dark')</script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QMQSHOP — Laptop, PC Gaming & Linh Kiện Chính Hãng</title>
+  <meta name="description" content="QMQSHOP - Cửa hàng laptop gaming, PC gaming, PC văn phòng và linh kiện máy tính chính hãng tại Việt Nam." />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- ============================================================
+       HEADER
+       ============================================================ -->
+  <header class="main-header">
+    <div class="header-inner">
+      <button class="hamburger" onclick="document.querySelector('.category-nav').classList.toggle('show')" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <a href="/" class="logo">
+        <img src="../assets/logo.png" alt="QMQSHOP" class="logo-img" />
+        <div class="logo-text">
+          <span class="logo-brand">QMQ<span>SHOP</span></span>
+          <span class="logo-sub">SINCE 2026</span>
+        </div>
+      </a>
+
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="global-search" placeholder="Tìm laptop, PC, linh kiện..." onkeydown="if(event.key==='Enter' && this.value.trim()) window.location.href='/products.html?search='+encodeURIComponent(this.value.trim())" />
+      </div>
+
+      <div class="header-tools" id="auth-header-section">
+        <!-- Populated by Auth.updateHeader() -->
+        <a href="/cart.html" class="cart-btn" id="header-cart-btn">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span class="cart-count" id="header-cart-count">0</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       NAVIGATION
+       ============================================================ -->
+  <nav class="category-nav" id="main-nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-item"><i class="fa-solid fa-house"></i> Trang chủ</a>
+      <a href="/products.html?category=1" class="nav-item"><i class="fa-solid fa-laptop"></i> Laptop Gaming</a>
+      <a href="/products.html?category=2" class="nav-item"><i class="fa-solid fa-gamepad"></i> PC Gaming</a>
+      <a href="/products.html?category=3" class="nav-item"><i class="fa-solid fa-briefcase"></i> PC Văn Phòng</a>
+      <a href="/products.html?category=4" class="nav-item"><i class="fa-solid fa-microchip"></i> Linh Kiện</a>
+      <a href="/products.html" class="nav-item"><i class="fa-solid fa-store"></i> Tất cả</a>
+    </div>
+  </nav>
+
+  <!-- ============================================================
+       HERO BANNER
+       ============================================================ -->
+  <section class="hero" id="hero">
+    <div class="hero-slider" id="hero-slider">
+      <div class="hero-slide active">
+        <img src="https://images.unsplash.com/photo-1603481588273-2f908a9a7a1b?q=80&w=1600&auto=format&fit=crop" alt="Gaming PC" />
+      </div>
+      <div class="hero-slide">
+        <img src="https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=1600&auto=format&fit=crop" alt="Laptop Gaming" />
+      </div>
+      <div class="hero-slide">
+        <img src="https://images.unsplash.com/photo-1587202372634-32705e3bf49c?q=80&w=1600&auto=format&fit=crop" alt="PC Components" />
+      </div>
+    </div>
+
+    <div class="hero-overlay">
+      <div class="hero-text">
+        <h1>QMQ<span>SHOP</span></h1>
+        <p>Laptop, PC Gaming & Linh Kiện Chính Hãng — Giá Tốt Nhất Thị Trường</p>
+        <a href="/products.html" class="btn-primary">
+          MUA NGAY <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-dots" id="hero-dots"></div>
+  </section>
+
+  <!-- ============================================================
+       FEATURED PRODUCTS
+       ============================================================ -->
+  <main class="container">
+    <section style="margin: 40px 0;">
+      <div class="section-title">
+        <h2><i class="fa-solid fa-fire"></i> Nổi Bật</h2>
+        <a href="/products.html" class="view-all">Xem tất cả <i class="fa-solid fa-angle-right"></i></a>
+      </div>
+      <div class="product-grid" id="featured-grid">
+        <div class="loading-center">
+          <div class="spinner"></div>
+          <span>Đang tải sản phẩm...</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+       CATEGORIES
+       ============================================================ -->
+    <section style="margin: 40px 0;">
+      <div class="section-title">
+        <h2><i class="fa-solid fa-grid-2"></i> Danh Mục</h2>
+      </div>
+      <div class="product-grid" id="category-grid" style="grid-template-columns: repeat(4, 1fr);"></div>
+    </section>
+  </main>
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo-text" style="margin-bottom:12px;">
+            <span class="logo-brand">QMQ<span>SHOP</span></span>
+            <span class="logo-sub">SINCE 2026</span>
+          </div>
+          <p>QMQSHOP là cửa hàng chuyên cung cấp laptop gaming, PC gaming, PC văn phòng và linh kiện máy tính chính hãng. Cam kết giá tốt, bảo hành uy tín.</p>
+        </div>
+        <div class="footer-col">
+          <h5>Danh mục</h5>
+          <a href="/products.html?category=1">Laptop Gaming</a>
+          <a href="/products.html?category=2">PC Gaming</a>
+          <a href="/products.html?category=3">PC Văn Phòng</a>
+          <a href="/products.html?category=4">Linh Kiện</a>
+        </div>
+        <div class="footer-col">
+          <h5>Hỗ trợ</h5>
+          <a href="#">Hướng dẫn mua hàng</a>
+          <a href="#">Chính sách bảo hành</a>
+          <a href="#">Chính sách đổi trả</a>
+          <a href="#">Vận chuyển</a>
+        </div>
+        <div class="footer-col">
+          <h5>Liên hệ</h5>
+          <a href="#"><i class="fa-solid fa-phone" style="width:18px;color:var(--accent);"></i> 1900.xxxx</a>
+          <a href="#"><i class="fa-solid fa-envelope" style="width:18px;color:var(--accent);"></i> info@qmqshop.com</a>
+          <a href="#"><i class="fa-solid fa-location-dot" style="width:18px;color:var(--accent);"></i> Hà Nội, Việt Nam</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 QMQSHOP. All rights reserved.</span>
+        <div class="footer-social">
+          <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============================================================
+       SCRIPTS
+       ============================================================ -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/compare.js"></script>
+  <script>
+    // ============================================================
+    // Hero Slider
+    // ============================================================
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.hero-slide');
+    const dotsContainer = document.getElementById('hero-dots');
+
+    slides.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
+      dot.onclick = () => goToSlide(i);
+      dotsContainer.appendChild(dot);
+    });
+
+    function goToSlide(index) {
+      slides.forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.hero-dot').forEach(d => d.classList.remove('active'));
+      currentSlide = index;
+      slides[currentSlide].classList.add('active');
+      document.querySelectorAll('.hero-dot')[currentSlide].classList.add('active');
+    }
+
+    function nextSlide() { goToSlide((currentSlide + 1) % slides.length); }
+
+    setInterval(nextSlide, 5000);
+
+    // ============================================================
+    // Load Featured Products
+    // ============================================================
+    async function loadFeatured() {
+      const grid = document.getElementById('featured-grid');
+      try {
+        const data = await API.getFeatured();
+        if (!data.products || data.products.length === 0) {
+          grid.innerHTML = '<div class="loading-center" style="grid-column:1/-1;"><span>Chưa có sản phẩm nổi bật</span></div>';
+          return;
+        }
+        grid.innerHTML = data.products.map((p, idx) => renderProductCard(p, idx)).join('');
+      } catch (err) {
+        grid.innerHTML = '<div class="loading-center" style="grid-column:1/-1;"><span>Lỗi tải sản phẩm: ' + err.message + '</span></div>';
+      }
+    }
+
+    // ============================================================
+    // Load Categories
+    // ============================================================
+    async function loadCategories() {
+      const grid = document.getElementById('category-grid');
+      try {
+        const cats = await API.getCategories();
+        grid.innerHTML = cats.map(c => `
+          <a href="/products.html?category=${c.id}" class="product-card" style="text-align:center;padding:32px 16px;justify-content:center;align-items:center;">
+            <i class="fa-solid ${c.icon}" style="font-size:48px;color:var(--accent);margin-bottom:16px;"></i>
+            <h3 style="font-family:var(--font-body);font-size:18px;font-weight:700;text-transform:none;letter-spacing:0;color:var(--text-primary);">${c.name}</h3>
+            <span style="font-size:13px;color:var(--text-secondary);">Xem sản phẩm <i class="fa-solid fa-arrow-right"></i></span>
+          </a>
+        `).join('');
+      } catch (err) {
+        grid.innerHTML = '';
+      }
+    }
+
+    // ============================================================
+    // Render Product Card
+    // ============================================================
+    function renderProductCard(p, idx) {
+      const img = p.images && p.images[0] ? p.images[0] : '';
+      const discount = p.old_price && p.old_price > p.price
+        ? Math.round((1 - p.price / p.old_price) * 100)
+        : 0;
+      return `
+        <div class="product-card">
+          ${discount > 0 ? `<span class="badge badge-red">-${discount}%</span>` : ''}
+          <a href="/product.html?id=${p.id}" class="product-img-wrap">
+            <img src="${img}" alt="${p.name}" loading="lazy" />
+          </a>
+          <a href="/product.html?id=${p.id}" class="product-name">${p.name}</a>
+          <div class="product-specs">
+            ${p.specs && p.specs.CPU ? p.specs.CPU : ''}
+            ${p.specs && p.specs.GPU ? ' | ' + p.specs.GPU : ''}
+            ${p.specs && p.specs.RAM ? ' | ' + p.specs.RAM : ''}
+          </div>
+          <div class="product-price-row">
+            <span class="price-current">${formatPrice(p.price)}</span>
+            ${p.old_price ? `<span class="price-old">${formatPrice(p.old_price)}</span>` : ''}
+          </div>
+          <button class="btn-add-cart" onclick="event.preventDefault(); Cart.add(${p.id})">
+            <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+          </button>
+        </div>
+      `;
+    }
+
+    // ============================================================
+    // Init
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', async () => {
+      await Auth.init();
+      Auth.updateHeader();
+      await Cart.load();
+      await Compare.load();
+      await loadFeatured();
+      await loadCategories();
+    });
+  </script>
+</body>
+</html>

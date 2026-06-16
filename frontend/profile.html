@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('qmq_theme') || 'dark')</script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tài khoản — QMQSHOP</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-inner">
+      <a href="/" class="logo">
+        <img src="../assets/logo.png" alt="" class="logo-img" />
+        <div class="logo-text">
+          <span class="logo-brand">QMQ<span>SHOP</span></span>
+          <span class="logo-sub">SINCE 2026</span>
+        </div>
+      </a>
+      <div class="header-tools" id="auth-header-section"></div>
+    </div>
+  </header>
+
+  <main class="container" style="padding:30px 20px;">
+    <h1 style="font-size:24px;letter-spacing:2px;margin-bottom:24px;">
+      <i class="fa-solid fa-user-gear" style="color:var(--accent);"></i> TÀI KHOẢN CỦA TÔI
+    </h1>
+
+    <div id="profile-loading" class="loading-center">
+      <div class="spinner"></div>
+      <span>Đang tải...</span>
+    </div>
+
+    <div id="profile-content" style="display:none;">
+      <div class="profile-grid">
+        <!-- Personal Info -->
+        <div class="profile-card">
+          <h3><i class="fa-solid fa-circle-info" style="color:var(--accent);"></i> Thông tin cá nhân</h3>
+          <form id="profile-form">
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="pf-email" readonly style="opacity:0.5;cursor:not-allowed;" />
+            </div>
+            <div class="form-group">
+              <label>Họ tên</label>
+              <input type="text" id="pf-name" required />
+            </div>
+            <div class="form-group">
+              <label>Số điện thoại</label>
+              <input type="text" id="pf-phone" />
+            </div>
+            <div class="form-group">
+              <label>Địa chỉ</label>
+              <input type="text" id="pf-address" />
+            </div>
+            <button type="submit" class="btn-primary w-full" id="pf-save-btn" style="justify-content:center;">
+              <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+            </button>
+          </form>
+        </div>
+
+        <!-- Change Password -->
+        <div class="profile-card">
+          <h3><i class="fa-solid fa-lock" style="color:var(--accent);"></i> Đổi mật khẩu</h3>
+          <form id="password-form">
+            <div class="form-group">
+              <label>Mật khẩu hiện tại</label>
+              <input type="password" id="pf-current-pw" required />
+            </div>
+            <div class="form-group">
+              <label>Mật khẩu mới</label>
+              <input type="password" id="pf-new-pw" required minlength="6" />
+            </div>
+            <div class="form-group">
+              <label>Xác nhận mật khẩu mới</label>
+              <input type="password" id="pf-confirm-pw" required />
+            </div>
+            <button type="submit" class="btn-primary w-full" id="pw-save-btn" style="justify-content:center;">
+              <i class="fa-solid fa-key"></i> Đổi mật khẩu
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="profile-error" class="loading-center" style="display:none;">
+      <i class="fa-regular fa-face-frown" style="font-size:40px;color:var(--text-muted);"></i>
+      <span id="profile-error-message">Vui lòng đăng nhập</span>
+      <a href="/auth.html" class="btn-primary">Đăng nhập</a>
+    </div>
+  </main>
+
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-bottom"><span>&copy; 2026 QMQSHOP</span></div>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/compare.js"></script>
+  <script>
+    let _profileUser = null;
+
+    function fillProfile(user) {
+      document.getElementById('pf-email').value = user.email || '';
+      document.getElementById('pf-name').value = user.full_name || '';
+      document.getElementById('pf-phone').value = user.phone || '';
+      document.getElementById('pf-address').value = user.address || '';
+    }
+
+    // Save profile
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('pf-save-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner spinner-sm"></span> Đang lưu...';
+
+      try {
+        const user = await API.updateProfile({
+          full_name: document.getElementById('pf-name').value.trim(),
+          phone: document.getElementById('pf-phone').value.trim(),
+          address: document.getElementById('pf-address').value.trim(),
+        });
+        _profileUser = user;
+        Toast.success('Cập nhật thông tin thành công');
+      } catch (err) {
+        Toast.error(err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi';
+      }
+    });
+
+    // Change password
+    document.getElementById('password-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const currentPw = document.getElementById('pf-current-pw').value;
+      const newPw = document.getElementById('pf-new-pw').value;
+      const confirmPw = document.getElementById('pf-confirm-pw').value;
+
+      if (newPw !== confirmPw) {
+        Toast.error('Mật khẩu xác nhận không khớp');
+        return;
+      }
+
+      if (newPw.length < 6) {
+        Toast.error('Mật khẩu mới phải có ít nhất 6 ký tự');
+        return;
+      }
+
+      const btn = document.getElementById('pw-save-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner spinner-sm"></span> Đang xử lý...';
+
+      try {
+        await API.changePassword({
+          current_password: currentPw,
+          new_password: newPw,
+        });
+        Toast.success('Đổi mật khẩu thành công');
+        document.getElementById('password-form').reset();
+      } catch (err) {
+        Toast.error(err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-key"></i> Đổi mật khẩu';
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await Auth.init();
+      Auth.updateHeader();
+      await Cart.load();
+      await Compare.load();
+
+      if (!Auth.isLoggedIn()) {
+        document.getElementById('profile-loading').style.display = 'none';
+        document.getElementById('profile-error').style.display = 'flex';
+        document.getElementById('profile-error-message').textContent = 'Vui lòng đăng nhập để quản lý tài khoản';
+        return;
+      }
+
+      const user = Auth.getUser();
+      fillProfile(user);
+      _profileUser = user;
+      document.getElementById('profile-loading').style.display = 'none';
+      document.getElementById('profile-content').style.display = 'block';
+    });
+  </script>
+</body>
+</html>

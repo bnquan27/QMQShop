@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tổng quan — QMQSHOP Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-inner">
+      <a href="/" class="logo">
+        <img src="../../assets/logo.png" alt="" class="logo-img" />
+        <div class="logo-text">
+          <span class="logo-brand">QMQ<span>SHOP</span></span>
+          <span class="logo-sub">ADMIN</span>
+        </div>
+      </a>
+      <div class="header-tools" id="auth-header-section"></div>
+    </div>
+  </header>
+
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <a href="/admin/dashboard.html" class="active"><i class="fa-solid fa-gauge-high"></i> Tổng quan</a>
+      <a href="/admin/products.html"><i class="fa-solid fa-box"></i> Sản phẩm</a>
+      <a href="/admin/orders.html"><i class="fa-solid fa-truck"></i> Đơn hàng</a>
+      <a href="/"><i class="fa-solid fa-arrow-left"></i> Về trang chủ</a>
+    </aside>
+
+    <main class="admin-main">
+      <h1>TỔNG QUAN</h1>
+
+      <div class="admin-stats" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Tổng sản phẩm</div>
+          <div class="stat-value" id="stat-products">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tổng đơn hàng</div>
+          <div class="stat-value" id="stat-orders">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Doanh thu</div>
+          <div class="stat-value" id="stat-revenue">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Sản phẩm tồn kho</div>
+          <div class="stat-value" id="stat-lowstock">—</div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2 style="font-size:20px;letter-spacing:1px;">ĐƠN HÀNG GẦN ĐÂY</h2>
+        <a href="/admin/orders.html" class="btn-outline btn-sm">Xem tất cả <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+      <table class="data-table" id="recent-orders-table">
+        <thead>
+          <tr>
+            <th>Mã đơn</th>
+            <th>Khách hàng</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th>Ngày</th>
+          </tr>
+        </thead>
+        <tbody id="recent-orders-body">
+          <tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Đang tải...</td></tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/cart.js"></script>
+  <script>
+    const statusLabels = {
+      pending: 'Chờ xác nhận', confirmed: 'Đã xác nhận',
+      shipping: 'Đang giao', delivered: 'Đã giao', cancelled: 'Đã hủy'
+    };
+
+    async function loadDashboard() {
+      try {
+        const [products, orders] = await Promise.all([
+          API.adminGetProducts(),
+          API.adminGetOrders()
+        ]);
+
+        const totalProducts = products.length;
+        const totalOrders = orders.length;
+        const totalRevenue = orders
+          .filter(o => o.status !== 'cancelled')
+          .reduce((s, o) => s + Number(o.total_amount), 0);
+        const lowStock = products.filter(p => p.stock > 0 && p.stock <= 5).length;
+
+        document.getElementById('stat-products').textContent = totalProducts;
+        document.getElementById('stat-orders').textContent = totalOrders;
+        document.getElementById('stat-revenue').textContent = formatPrice(totalRevenue);
+        document.getElementById('stat-lowstock').textContent = lowStock;
+
+        const tbody = document.getElementById('recent-orders-body');
+        if (orders.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Chưa có đơn hàng</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = orders.slice(0, 8).map(o => `
+          <tr>
+            <td style="font-family:var(--font-display);color:var(--accent);">#QMQ${String(o.id).padStart(5,'0')}</td>
+            <td>User #${o.user_id}</td>
+            <td style="color:var(--accent);">${formatPrice(o.total_amount)}</td>
+            <td><span class="order-status status-${o.status}">${statusLabels[o.status] || o.status}</span></td>
+            <td style="color:var(--text-muted);font-size:13px;">${new Date(o.created_at).toLocaleDateString('vi-VN')}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        document.getElementById('stats-grid').innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);">Lỗi: ${err.message}</div>`;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await Auth.init();
+      if (!Auth.isLoggedIn() || !Auth.isAdmin()) {
+        window.location.href = '/auth.html';
+        return;
+      }
+      Auth.updateHeader();
+      loadDashboard();
+    });
+  </script>
+</body>
+</html>
