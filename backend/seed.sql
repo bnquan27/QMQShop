@@ -99,7 +99,7 @@ INSERT INTO products (category_id, name, slug, description, specs, price, old_pr
  'PC Gaming MINH Pro đỉnh cao với AMD Ryzen 7 7800X3D và RTX 4080 Super 16GB. RAM 32GB DDR5 6000MHz, SSD 2TB NVMe Gen5. Tản nhiệt AIO 360mm. PSU 1000W Gold. Dàn máy chiến 4K Ultra mọi tựa game.',
  '{"CPU": "AMD Ryzen 7 7800X3D", "RAM": "32GB DDR5 6000", "GPU": "NVIDIA RTX 4080 Super 16GB", "Mainboard": "X670E DDR5", "SSD": "2TB NVMe Gen5", "PSU": "1000W 80+ Gold"}',
  45990000, 49990000,
- ARRAY['https://images.unsplash.com/photo-1587202372775-e229f172b9f7?q=80&w=800&auto=format&fit=crop'],
+ ARRAY['https://images.pexels.com/photos/10684919/pexels-photo-10684919.jpeg?auto=compress&cs=tinysrgb&w=600'],
  4, false),
 
 (2,
@@ -170,7 +170,7 @@ INSERT INTO products (category_id, name, slug, description, specs, price, old_pr
  'RAM Kingston Fury Beast 16GB DDR5 5600MHz. Tản nhiệt nhôm cao cấp, hỗ trợ Intel XMP 3.0. Plug-and-play, tương thích đa nền tảng. Nâng cấp hiệu năng đáng kể so với DDR4. Bảo hành trọn đời.',
  '{"Dung lượng": "16GB (1x16GB)", "Loại": "DDR5", "Tốc độ": "5600MHz", "Điện áp": "1.25V", "CAS Latency": "CL40", "Tản nhiệt": "Nhôm ép"}',
  1190000, 1490000,
- ARRAY['https://images.unsplash.com/photo-1606914504570-53533a4e1bd3?q=80&w=800&auto=format&fit=crop'],
+ ARRAY['https://images.pexels.com/photos/19716297/pexels-photo-19716297.jpeg?auto=compress&cs=tinysrgb&w=600'],
  50, false),
 
 (4,
@@ -179,5 +179,5 @@ INSERT INTO products (category_id, name, slug, description, specs, price, old_pr
  'SSD Samsung 990 PRO 1TB PCIe 4.0 NVMe M.2 với tốc độ đọc lên đến 7,450MB/s. Tối ưu cho gaming và xử lý đồ họa nặng. Bộ điều khiển Samsung Pascal tự động. Bảo hành 5 năm.',
  '{"Dung lượng": "1TB", "Chuẩn": "PCIe 4.0 x4 NVMe M.2", "Đọc": "7,450 MB/s", "Ghi": "6,900 MB/s", "TBW": "600TB", "Bảo hành": "5 năm"}',
  3490000, 4290000,
- ARRAY['https://images.unsplash.com/photo-1563770551464-0d9d4e8ad380?q=80&w=800&auto=format&fit=crop'],
+ ARRAY['https://images.pexels.com/photos/5222605/pexels-photo-5222605.jpeg?auto=compress&cs=tinysrgb&w=600'],
  22, false);
