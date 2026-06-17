@@ -543,9 +543,11 @@ func CreateOrder(userID int, req models.OrderRequest, cartItems []models.CartWit
 
 func GetUserOrders(userID int) ([]models.Order, error) {
 	rows, err := DB.Query(
-		`SELECT id, user_id, status, total_amount, shipping_address, phone, note, created_at
-		 FROM orders WHERE user_id = $1
-		 ORDER BY created_at DESC`, userID,
+		`SELECT o.id, o.user_id, u.full_name, o.status, o.total_amount, o.shipping_address, o.phone, o.note, o.created_at
+		 FROM orders o
+		 JOIN users u ON u.id = o.user_id
+		 WHERE o.user_id = $1
+		 ORDER BY o.created_at DESC`, userID,
 	)
 	if err != nil {
 		return nil, err
@@ -555,7 +557,7 @@ func GetUserOrders(userID int) ([]models.Order, error) {
 	var orders []models.Order
 	for rows.Next() {
 		var o models.Order
-		if err := rows.Scan(&o.ID, &o.UserID, &o.Status, &o.TotalAmount,
+		if err := rows.Scan(&o.ID, &o.UserID, &o.FullName, &o.Status, &o.TotalAmount,
 			&o.ShippingAddress, &o.Phone, &o.Note, &o.CreatedAt); err != nil {
 			return nil, err
 		}
@@ -570,9 +572,11 @@ func GetUserOrders(userID int) ([]models.Order, error) {
 func GetOrderByID(id, userID int) (*models.Order, error) {
 	o := &models.Order{}
 	err := DB.QueryRow(
-		`SELECT id, user_id, status, total_amount, shipping_address, phone, note, created_at
-		 FROM orders WHERE id = $1 AND user_id = $2`, id, userID,
-	).Scan(&o.ID, &o.UserID, &o.Status, &o.TotalAmount,
+		`SELECT o.id, o.user_id, u.full_name, o.status, o.total_amount, o.shipping_address, o.phone, o.note, o.created_at
+		 FROM orders o
+		 JOIN users u ON u.id = o.user_id
+		 WHERE o.id = $1 AND o.user_id = $2`, id, userID,
+	).Scan(&o.ID, &o.UserID, &o.FullName, &o.Status, &o.TotalAmount,
 		&o.ShippingAddress, &o.Phone, &o.Note, &o.CreatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -608,9 +612,11 @@ func GetOrderByID(id, userID int) (*models.Order, error) {
 func GetOrderByIDAdmin(id int) (*models.Order, error) {
 	o := &models.Order{}
 	err := DB.QueryRow(
-		`SELECT id, user_id, status, total_amount, shipping_address, phone, note, created_at
-		 FROM orders WHERE id = $1`, id,
-	).Scan(&o.ID, &o.UserID, &o.Status, &o.TotalAmount,
+		`SELECT o.id, o.user_id, u.full_name, o.status, o.total_amount, o.shipping_address, o.phone, o.note, o.created_at
+		 FROM orders o
+		 JOIN users u ON u.id = o.user_id
+		 WHERE o.id = $1`, id,
+	).Scan(&o.ID, &o.UserID, &o.FullName, &o.Status, &o.TotalAmount,
 		&o.ShippingAddress, &o.Phone, &o.Note, &o.CreatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -644,8 +650,10 @@ func GetOrderByIDAdmin(id int) (*models.Order, error) {
 
 func GetAllOrders() ([]models.Order, error) {
 	rows, err := DB.Query(
-		`SELECT id, user_id, status, total_amount, shipping_address, phone, note, created_at
-		 FROM orders ORDER BY created_at DESC`,
+		`SELECT o.id, o.user_id, u.full_name, o.status, o.total_amount, o.shipping_address, o.phone, o.note, o.created_at
+		 FROM orders o
+		 JOIN users u ON u.id = o.user_id
+		 ORDER BY o.created_at DESC`,
 	)
 	if err != nil {
 		return nil, err
@@ -655,7 +663,7 @@ func GetAllOrders() ([]models.Order, error) {
 	var orders []models.Order
 	for rows.Next() {
 		var o models.Order
-		if err := rows.Scan(&o.ID, &o.UserID, &o.Status, &o.TotalAmount,
+		if err := rows.Scan(&o.ID, &o.UserID, &o.FullName, &o.Status, &o.TotalAmount,
 			&o.ShippingAddress, &o.Phone, &o.Note, &o.CreatedAt); err != nil {
 			return nil, err
 		}

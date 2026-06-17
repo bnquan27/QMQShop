@@ -109,7 +109,7 @@
         tbody.innerHTML = orders.slice(0, 8).map(o => `
           <tr>
             <td style="font-family:var(--font-display);color:var(--accent);">#QMQ${String(o.id).padStart(5,'0')}</td>
-            <td>User #${o.user_id}</td>
+             <td>${o.full_name || 'User #' + o.user_id}</td>
             <td style="color:var(--accent);">${formatPrice(o.total_amount)}</td>
             <td><span class="order-status status-${o.status}">${statusLabels[o.status] || o.status}</span></td>
             <td style="color:var(--text-muted);font-size:13px;">${new Date(o.created_at).toLocaleDateString('vi-VN')}</td>

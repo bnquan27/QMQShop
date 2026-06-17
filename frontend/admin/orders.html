@@ -115,7 +115,7 @@
       tbody.innerHTML = filtered.map(o => `
         <tr>
           <td style="font-family:var(--font-display);color:var(--accent);font-size:14px;">#QMQ${String(o.id).padStart(5,'0')}</td>
-          <td style="font-size:13px;">User #${o.user_id}${o.phone ? '<br><span style="color:var(--text-muted);font-size:12px;">'+o.phone+'</span>' : ''}</td>
+          <td style="font-size:13px;">${o.full_name || ('User #' + o.user_id)}${o.phone ? '<br><span style="color:var(--text-muted);font-size:12px;">'+o.phone+'</span>' : ''}</td>
           <td style="font-size:13px;color:var(--text-secondary);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${o.shipping_address || '—'}</td>
           <td style="color:var(--accent);font-family:var(--font-display);">${formatPrice(o.total_amount)}</td>
           <td>
@@ -161,7 +161,7 @@
             </div>
 
             <div style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">
-              <div style="margin-bottom:4px;"><i class="fa-solid fa-user" style="width:20px;color:var(--accent);"></i> User #${order.user_id}</div>
+              <div style="margin-bottom:4px;"><i class="fa-solid fa-user" style="width:20px;color:var(--accent);"></i> ${order.full_name || ('User #' + order.user_id)}</div>
               <div style="margin-bottom:4px;"><i class="fa-solid fa-location-dot" style="width:20px;color:var(--accent);"></i> ${order.shipping_address || '—'}</div>
               <div style="margin-bottom:4px;"><i class="fa-solid fa-phone" style="width:20px;color:var(--accent);"></i> ${order.phone || '—'}</div>
               ${order.note ? `<div style="margin-bottom:4px;"><i class="fa-solid fa-note-sticky" style="width:20px;color:var(--accent);"></i> ${order.note}</div>` : ''}

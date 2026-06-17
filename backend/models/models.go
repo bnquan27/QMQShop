@@ -91,6 +91,7 @@ type CartWithProduct struct {
 type Order struct {
 	ID               int       `json:"id"`
 	UserID           int       `json:"user_id"`
+	FullName         string    `json:"full_name"`
 	Status           string    `json:"status"`
 	TotalAmount      int64     `json:"total_amount"`
 	ShippingAddress  string    `json:"shipping_address"`
