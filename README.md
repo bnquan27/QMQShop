@@ -171,7 +171,26 @@ The server starts on **`http://localhost:8080`**.
 
 ## 📸 Screenshots
 
-> *Coming soon — add screenshots of your storefront, product grid, cart, and admin panel here.*
+<div align="center">
+
+### 🏠 Trang Chủ
+<img src="screenshots/Main_page.png" alt="Main Page" width="820" style="border-radius: 8px; border: 1px solid #333;" />
+<p><em>Hero slider, danh mục sản phẩm và sản phẩm nổi bật</em></p>
+
+<br />
+
+### 🛍️ Danh Sách Sản Phẩm
+<img src="screenshots/Products_grid.png" alt="Products Grid" width="820" style="border-radius: 8px; border: 1px solid #333;" />
+<p><em>Lưới sản phẩm với tìm kiếm và phân loại theo danh mục</em></p>
+
+<br />
+
+| 📦 Quản Lý Đơn Hàng | ⚙️ Admin Dashboard |
+|:---:|:---:|
+| <img src="screenshots/Orders.png" alt="Orders" width="390" style="border-radius: 8px; border: 1px solid #333;" /> | <img src="screenshots/Admin_dashboard.png" alt="Admin Dashboard" width="390" style="border-radius: 8px; border: 1px solid #333;" /> |
+| <em>Theo dõi trạng thái đơn hàng</em> | <em>Quản lý sản phẩm & đơn hàng</em> |
+
+</div>
 
 ---
 
