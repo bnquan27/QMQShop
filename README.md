@@ -124,6 +124,8 @@ Make sure your PostgreSQL connection string matches the one expected by the app:
 postgres://postgres:postgres@localhost:5432/QMQSHOP?sslmode=disable
 ```
 
+Or create an .env file in QMQShop/backend/ and put your own connection string in .env
+
 ### Run the Server
 
 ```bash
