@@ -171,6 +171,7 @@ func scanProduct(scanner interface {
 		&p.ID, &categoryID, &p.Name, &p.Slug, &p.Description,
 		&specsJSON, &p.Price, &oldPrice, pq.Array(&p.Images),
 		&p.Stock, &p.Featured, &p.CreatedAt, &p.UpdatedAt,
+		&p.CategoryName,
 	)
 	if err != nil {
 		return err
@@ -249,8 +250,11 @@ func GetProducts(filter ProductFilter) (*ProductListResult, error) {
 	query := fmt.Sprintf(
 		`SELECT p.id, p.category_id, p.name, p.slug, p.description,
 		        p.specs, p.price, p.old_price, p.images,
-		        p.stock, p.featured, p.created_at, p.updated_at
-		 FROM products p WHERE %s
+		        p.stock, p.featured, p.created_at, p.updated_at,
+		        COALESCE(c.name, '') AS category_name
+		 FROM products p
+		 LEFT JOIN categories c ON c.id = p.category_id
+		 WHERE %s
 		 ORDER BY %s
 		 LIMIT $%d OFFSET $%d`,
 		whereClause, orderBy, argIdx, argIdx+1,
@@ -285,10 +289,13 @@ func GetProducts(filter ProductFilter) (*ProductListResult, error) {
 
 func GetProductByID(id int) (*models.Product, error) {
 	row := DB.QueryRow(
-		`SELECT id, category_id, name, slug, description,
-		        specs, price, old_price, images,
-		        stock, featured, created_at, updated_at
-		 FROM products WHERE id = $1`, id,
+		`SELECT p.id, p.category_id, p.name, p.slug, p.description,
+		        p.specs, p.price, p.old_price, p.images,
+		        p.stock, p.featured, p.created_at, p.updated_at,
+		        COALESCE(c.name, '') AS category_name
+		 FROM products p
+		 LEFT JOIN categories c ON c.id = p.category_id
+		 WHERE p.id = $1`, id,
 	)
 	var p models.Product
 	if err := scanProduct(row, &p); err != nil {
@@ -302,10 +309,13 @@ func GetProductByID(id int) (*models.Product, error) {
 
 func GetProductBySlug(slug string) (*models.Product, error) {
 	row := DB.QueryRow(
-		`SELECT id, category_id, name, slug, description,
-		        specs, price, old_price, images,
-		        stock, featured, created_at, updated_at
-		 FROM products WHERE slug = $1`, slug,
+		`SELECT p.id, p.category_id, p.name, p.slug, p.description,
+		        p.specs, p.price, p.old_price, p.images,
+		        p.stock, p.featured, p.created_at, p.updated_at,
+		        COALESCE(c.name, '') AS category_name
+		 FROM products p
+		 LEFT JOIN categories c ON c.id = p.category_id
+		 WHERE p.slug = $1`, slug,
 	)
 	var p models.Product
 	if err := scanProduct(row, &p); err != nil {
@@ -336,7 +346,8 @@ func CreateProduct(req models.ProductCreateRequest) (*models.Product, error) {
 		 VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9, $10)
 		 RETURNING id, category_id, name, slug, description,
 		           specs, price, old_price, images,
-		           stock, featured, created_at, updated_at`,
+		           stock, featured, created_at, updated_at,
+		           '' AS category_name`,
 		req.CategoryID, req.Name, generateSlug(req.Name), req.Description,
 		string(specsJSON), req.Price, req.OldPrice, pq.Array(req.Images), req.Stock, req.Featured,
 	)
@@ -365,7 +376,8 @@ func UpdateProduct(id int, req models.ProductCreateRequest) (*models.Product, er
 		 WHERE id = $11
 		 RETURNING id, category_id, name, slug, description,
 		           specs, price, old_price, images,
-		           stock, featured, created_at, updated_at`,
+		           stock, featured, created_at, updated_at,
+		           '' AS category_name`,
 		req.CategoryID, req.Name, generateSlug(req.Name), req.Description,
 		string(specsJSON), req.Price, req.OldPrice, pq.Array(req.Images), req.Stock, req.Featured, id,
 	)
@@ -835,10 +847,13 @@ func GetComparisonProducts(comparisonID int) ([]models.ComparisonWithProduct, er
 
 func GetAllProducts() ([]models.Product, error) {
 	rows, err := DB.Query(
-		`SELECT id, category_id, name, slug, description,
-		        specs, price, old_price, images,
-		        stock, featured, created_at, updated_at
-		 FROM products ORDER BY created_at DESC`,
+		`SELECT p.id, p.category_id, p.name, p.slug, p.description,
+		        p.specs, p.price, p.old_price, p.images,
+		        p.stock, p.featured, p.created_at, p.updated_at,
+		        COALESCE(c.name, '') AS category_name
+		 FROM products p
+		 LEFT JOIN categories c ON c.id = p.category_id
+		 ORDER BY p.created_at DESC`,
 	)
 	if err != nil {
 		return nil, err

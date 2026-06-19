@@ -45,19 +45,20 @@ type Category struct {
 // Product
 // ============================================================
 type Product struct {
-	ID          int               `json:"id"`
-	CategoryID  *int              `json:"category_id"`
-	Name        string            `json:"name"`
-	Slug        string            `json:"slug"`
-	Description string            `json:"description"`
-	Specs       map[string]string `json:"specs"`
-	Price       int64             `json:"price"`
-	OldPrice    *int64            `json:"old_price,omitempty"`
-	Images      []string          `json:"images"`
-	Stock       int               `json:"stock"`
-	Featured    bool              `json:"featured"`
-	CreatedAt   time.Time         `json:"created_at"`
-	UpdatedAt   time.Time         `json:"updated_at"`
+	ID           int               `json:"id"`
+	CategoryID   *int              `json:"category_id"`
+	CategoryName string            `json:"category_name"`
+	Name         string            `json:"name"`
+	Slug         string            `json:"slug"`
+	Description  string            `json:"description"`
+	Specs        map[string]string `json:"specs"`
+	Price        int64             `json:"price"`
+	OldPrice     *int64            `json:"old_price,omitempty"`
+	Images       []string          `json:"images"`
+	Stock        int               `json:"stock"`
+	Featured     bool              `json:"featured"`
+	CreatedAt    time.Time         `json:"created_at"`
+	UpdatedAt    time.Time         `json:"updated_at"`
 }
 
 func (p *Product) UnmarshalSpecs(raw []byte) error {

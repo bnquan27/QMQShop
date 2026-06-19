@@ -1,181 +1,215 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Thanh toán — QMQSHOP</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="css/style.css" />
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Thanh toán — QMQSHOP</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+	<link rel="stylesheet" href="css/style.css" />
 </head>
+
 <body>
-  <header class="main-header">
-    <div class="header-inner">
-      <a href="/" class="logo">
-        <img src="../assets/logo.png" alt="" class="logo-img" />
-        <div class="logo-text">
-          <span class="logo-brand">QMQ<span>SHOP</span></span>
-          <span class="logo-sub">SINCE 2026</span>
-        </div>
-      </a>
-      <div class="header-tools" id="auth-header-section"></div>
-    </div>
-  </header>
+	<header class="main-header">
+		<div class="header-inner">
+			<a href="/" class="logo">
+				<img src="../assets/logo.png" alt="" class="logo-img" />
+				<div class="logo-text">
+					<span class="logo-brand">QMQ<span>SHOP</span></span>
+					<span class="logo-sub">SINCE 2026</span>
+				</div>
+			</a>
+			<div class="header-tools" id="auth-header-section"></div>
+		</div>
+	</header>
 
-  <main class="container">
-    <h1 style="font-size:24px;letter-spacing:2px;padding:30px 0 10px;">
-      <i class="fa-solid fa-truck-fast" style="color:var(--accent);"></i> THANH TOÁN
-    </h1>
+	<main class="container">
+		<h1 style="font-size: 24px; letter-spacing: 2px; padding: 30px 0 10px">
+			<i class="fa-solid fa-truck-fast" style="color: var(--accent)"></i>
+			THANH TOÁN
+		</h1>
 
-    <div id="checkout-loading" class="loading-center">
-      <div class="spinner"></div>
-      <span>Đang tải...</span>
-    </div>
+		<div id="checkout-loading" class="loading-center">
+			<div class="spinner"></div>
+			<span>Đang tải...</span>
+		</div>
 
-    <div id="checkout-empty" style="display:none;" class="cart-empty">
-      <i class="fa-regular fa-cart-shopping"></i>
-      <h3>Giỏ hàng trống</h3>
-      <a href="/products.html" class="btn-primary">Mua sắm ngay</a>
-    </div>
+		<div id="checkout-empty" style="display: none" class="cart-empty">
+			<i class="fa-regular fa-cart-shopping"></i>
+			<h3>Giỏ hàng trống</h3>
+			<a href="/products.html" class="btn-primary">Mua sắm ngay</a>
+		</div>
 
-    <div class="checkout-layout" id="checkout-form" style="display:none;">
-      <div>
-        <form onsubmit="placeOrder(event)">
-          <div class="form-group">
-            <label>Địa chỉ giao hàng *</label>
-            <input type="text" class="form-input" id="order-address" placeholder="Số nhà, đường, phường, quận, thành phố" required />
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Số điện thoại *</label>
-              <input type="tel" class="form-input" id="order-phone" placeholder="0987654321" required />
-            </div>
-            <div class="form-group">
-              <label>Ghi chú</label>
-              <input type="text" class="form-input" id="order-note" placeholder="Ghi chú cho đơn hàng..." />
-            </div>
-          </div>
-          <button type="submit" class="btn-primary" id="order-btn" style="margin-top:8px;justify-content:center;">
-            <i class="fa-solid fa-check"></i> Đặt hàng
-          </button>
-        </form>
-      </div>
+		<div class="checkout-layout" id="checkout-form" style="display: none">
+			<div>
+				<form onsubmit="placeOrder(event)">
+					<div class="form-group">
+						<label>Địa chỉ giao hàng *</label>
+						<input type="text" class="form-input" id="order-address"
+							placeholder="Số nhà, đường, phường, quận, thành phố" required />
+					</div>
+					<div class="form-row">
+						<div class="form-group">
+							<label>Số điện thoại *</label>
+							<input type="tel" class="form-input" id="order-phone" placeholder="0987654321" required />
+						</div>
+						<div class="form-group">
+							<label>Ghi chú</label>
+							<input type="text" class="form-input" id="order-note" placeholder="Ghi chú cho đơn hàng..." />
+						</div>
+					</div>
+					<button type="submit" class="btn-primary" id="order-btn" style="margin-top: 8px; justify-content: center">
+						<i class="fa-solid fa-check"></i> Đặt hàng
+					</button>
+				</form>
+			</div>
 
-      <div class="order-summary">
-        <h3>Đơn hàng của bạn</h3>
-        <div id="summary-items"></div>
-        <div class="summary-total">
-          <span>Tổng cộng</span>
-          <span class="price-current" id="summary-total">0₫</span>
-        </div>
-      </div>
-    </div>
+			<div class="order-summary">
+				<h3>Đơn hàng của bạn</h3>
+				<div id="summary-items"></div>
+				<div class="summary-total">
+					<span>Tổng cộng</span>
+					<span class="price-current" id="summary-total">0₫</span>
+				</div>
+			</div>
+		</div>
 
-    <div id="order-success" style="display:none;" class="cart-empty">
-      <i class="fa-regular fa-circle-check" style="color:#10b981;font-size:48px;"></i>
-      <h3>Đặt hàng thành công!</h3>
-      <p>Cảm ơn bạn đã mua hàng tại QMQSHOP. Chúng tôi sẽ liên hệ xác nhận đơn hàng trong thời gian sớm nhất.</p>
-      <a href="/orders.html" class="btn-primary">Xem đơn hàng</a>
-      <a href="/" class="btn-outline mt-8">Về trang chủ</a>
-    </div>
-  </main>
+		<div id="order-success" style="display: none" class="cart-empty">
+			<i class="fa-regular fa-circle-check" style="color: #10b981; font-size: 48px"></i>
+			<h3>Đặt hàng thành công!</h3>
+			<p>
+				Cảm ơn bạn đã mua hàng tại QMQSHOP. Chúng tôi sẽ liên hệ xác nhận đơn
+				hàng trong thời gian sớm nhất.
+			</p>
+			<a href="/orders.html" class="btn-primary">Xem đơn hàng</a>
+		</div>
+	</main>
 
-  <footer class="main-footer" style="margin-top:40px;">
-    <div class="container">
-      <div class="footer-bottom"><span>&copy; 2026 QMQSHOP</span></div>
-    </div>
-  </footer>
+	<footer class="main-footer" style="margin-top: 40px">
+		<div class="container">
+			<div class="footer-bottom"><span>&copy; 2026 QMQSHOP</span></div>
+		</div>
+	</footer>
 
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="js/compare.js"></script>
-  <script>
-    async function loadCheckout() {
-      if (!Auth.isLoggedIn()) {
-        window.location.href = '/auth.html';
-        return;
-      }
+	<script src="js/api.js"></script>
+	<script src="js/auth.js"></script>
+	<script src="js/cart.js"></script>
+	<script src="js/compare.js"></script>
+	<script>
+		async function loadCheckout() {
+			if (!Auth.isLoggedIn()) {
+				window.location.href = "/auth.html";
+				return;
+			}
 
-      try {
-        const items = await Cart.load();
-        document.getElementById('checkout-loading').style.display = 'none';
+			try {
+				const items = await Cart.load();
+				document.getElementById("checkout-loading").style.display = "none";
 
-        if (items.length === 0) {
-          document.getElementById('checkout-empty').style.display = 'block';
-          return;
-        }
+				if (items.length === 0) {
+					document.getElementById("checkout-empty").style.display = "block";
+					return;
+				}
 
-        // Check for out-of-stock items
-        const oosItems = items.filter(item => item.stock < 1 || item.quantity > item.stock);
-        if (oosItems.length > 0) {
-          document.getElementById('checkout-loading').style.display = 'none';
-          document.getElementById('checkout-empty').style.display = 'block';
-          document.getElementById('checkout-empty').querySelector('i').className = 'fa-regular fa-circle-xmark';
-          document.getElementById('checkout-empty').querySelector('i').style.color = '#dc2626';
-          document.getElementById('checkout-empty').querySelector('h3').textContent = 'Sản phẩm đã hết hàng';
-          document.getElementById('checkout-empty').querySelector('p').innerHTML =
-            'Một số sản phẩm trong giỏ hàng đã hết hàng hoặc không đủ số lượng:<br><br>' +
-            oosItems.map(i =>
-              `<span style="color:var(--accent);">• ${i.product_name}</span>`
-            ).join('<br>') +
-            '<br><br>Vui lòng xóa sản phẩm khỏi giỏ hàng để tiếp tục.';
-          document.getElementById('checkout-empty').querySelector('a').textContent = 'Về giỏ hàng';
-          document.getElementById('checkout-empty').querySelector('a').href = '/cart.html';
-          return;
-        }
+				// Check for out-of-stock items
+				const oosItems = items.filter(
+					(item) => item.stock < 1 || item.quantity > item.stock,
+				);
+				if (oosItems.length > 0) {
+					document.getElementById("checkout-loading").style.display = "none";
+					document.getElementById("checkout-empty").style.display = "block";
+					document
+						.getElementById("checkout-empty")
+						.querySelector("i").className = "fa-regular fa-circle-xmark";
+					document
+						.getElementById("checkout-empty")
+						.querySelector("i").style.color = "#dc2626";
+					document
+						.getElementById("checkout-empty")
+						.querySelector("h3").textContent = "Sản phẩm đã hết hàng";
+					document
+						.getElementById("checkout-empty")
+						.querySelector("p").innerHTML =
+						"Một số sản phẩm trong giỏ hàng đã hết hàng hoặc không đủ số lượng:<br><br>" +
+						oosItems
+							.map(
+								(i) =>
+									`<span style="color:var(--accent);">• ${i.product_name}</span>`,
+							)
+							.join("<br>") +
+						"<br><br>Vui lòng xóa sản phẩm khỏi giỏ hàng để tiếp tục.";
+					document
+						.getElementById("checkout-empty")
+						.querySelector("a").textContent = "Về giỏ hàng";
+					document.getElementById("checkout-empty").querySelector("a").href =
+						"/cart.html";
+					return;
+				}
 
-        document.getElementById('checkout-form').style.display = 'grid';
-        const user = Auth.getUser();
-        if (user) {
-          if (user.phone) document.getElementById('order-phone').value = user.phone;
-          if (user.address) document.getElementById('order-address').value = user.address;
-        }
+				document.getElementById("checkout-form").style.display = "grid";
+				const user = Auth.getUser();
+				if (user) {
+					if (user.phone)
+						document.getElementById("order-phone").value = user.phone;
+					if (user.address)
+						document.getElementById("order-address").value = user.address;
+				}
 
-        const summaryItems = document.getElementById('summary-items');
-        summaryItems.innerHTML = items.map(item =>
-          `<div class="summary-item">
+				const summaryItems = document.getElementById("summary-items");
+				summaryItems.innerHTML = items
+					.map(
+						(item) =>
+							`<div class="summary-item">
             <span>${item.product_name} × ${item.quantity}</span>
             <span>${formatPrice(item.product_price * item.quantity)}</span>
-          </div>`
-        ).join('');
+          </div>`,
+					)
+					.join("");
 
-        document.getElementById('summary-total').textContent = formatPrice(Cart.getTotal());
-      } catch (err) {
-        document.getElementById('checkout-loading').innerHTML = `<span>Lỗi: ${err.message}</span>`;
-      }
-    }
+				document.getElementById("summary-total").textContent = formatPrice(
+					Cart.getTotal(),
+				);
+			} catch (err) {
+				document.getElementById("checkout-loading").innerHTML =
+					`<span>Lỗi: ${err.message}</span>`;
+			}
+		}
 
-    async function placeOrder(e) {
-      e.preventDefault();
-      const btn = document.getElementById('order-btn');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner spinner-sm"></span> Đang xử lý...';
+		async function placeOrder(e) {
+			e.preventDefault();
+			const btn = document.getElementById("order-btn");
+			btn.disabled = true;
+			btn.innerHTML =
+				'<span class="spinner spinner-sm"></span> Đang xử lý...';
 
-      try {
-        const order = await API.placeOrder({
-          shipping_address: document.getElementById('order-address').value.trim(),
-          phone: document.getElementById('order-phone').value.trim(),
-          note: document.getElementById('order-note').value.trim()
-        });
+			try {
+				const order = await API.placeOrder({
+					shipping_address: document
+						.getElementById("order-address")
+						.value.trim(),
+					phone: document.getElementById("order-phone").value.trim(),
+					note: document.getElementById("order-note").value.trim(),
+				});
 
-        document.getElementById('checkout-form').style.display = 'none';
-        document.getElementById('order-success').style.display = 'block';
-        Cart._items = [];
-        Cart.updateBadge();
-      } catch (err) {
-        Toast.error(err.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> Đặt hàng';
-      }
-    }
+				document.getElementById("checkout-form").style.display = "none";
+				document.getElementById("order-success").style.display = "block";
+				Cart._items = [];
+				Cart.updateBadge();
+			} catch (err) {
+				Toast.error(err.message);
+			} finally {
+				btn.disabled = false;
+				btn.innerHTML = '<i class="fa-solid fa-check"></i> Đặt hàng';
+			}
+		}
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      await Auth.init();
-      Auth.updateHeader();
-      await Compare.load();
-      loadCheckout();
-    });
-  </script>
+		document.addEventListener("DOMContentLoaded", async () => {
+			await Auth.init();
+			Auth.updateHeader();
+			await Compare.load();
+			loadCheckout();
+		});
+	</script>
 </body>
+
 </html>

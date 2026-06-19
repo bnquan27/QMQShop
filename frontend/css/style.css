@@ -1899,9 +1899,16 @@ textarea.form-input {
 }
 
 .cms-products {
+	max-height: calc(100% - 45%);
 	flex: 1;
-	overflow-y: auto;
 	padding: 8px;
+	overflow-y: auto;
+}
+
+.cms-product-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
 	display: flex;
 	flex-direction: column;
 	gap: 8px;

@@ -220,10 +220,7 @@
 			const bc = document.getElementById("breadcrumb-category");
 			if (p.category_id) {
 				bc.href = "/products.html?category=" + p.category_id;
-				bc.textContent =
-					p.specs && Object.keys(p.specs).length > 0
-						? "Chi tiết"
-						: "Sản phẩm";
+				bc.textContent = p.category_name;
 			}
 		}
 
