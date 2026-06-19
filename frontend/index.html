@@ -52,7 +52,6 @@
       <a href="/products.html?category=2" class="nav-item"><i class="fa-solid fa-gamepad"></i> PC Gaming</a>
       <a href="/products.html?category=3" class="nav-item"><i class="fa-solid fa-briefcase"></i> PC Văn Phòng</a>
       <a href="/products.html?category=4" class="nav-item"><i class="fa-solid fa-microchip"></i> Linh Kiện</a>
-      <a href="/products.html" class="nav-item"><i class="fa-solid fa-store"></i> Tất cả</a>
     </div>
   </nav>
 
@@ -86,30 +85,42 @@
   </section>
 
   <!-- ============================================================
-       FEATURED PRODUCTS
+       FEATURED PRODUCTS — SWIPER
        ============================================================ -->
   <main class="container">
-    <section style="margin: 40px 0;">
-      <div class="section-title">
+    <section class="featured-swiper-section">
+      <div class="featured-swiper-header">
         <h2><i class="fa-solid fa-fire"></i> Nổi Bật</h2>
-        <a href="/products.html" class="view-all">Xem tất cả <i class="fa-solid fa-angle-right"></i></a>
       </div>
-      <div class="product-grid" id="featured-grid">
-        <div class="loading-center">
-          <div class="spinner"></div>
-          <span>Đang tải sản phẩm...</span>
+      <div class="featured-swiper-wrap">
+        <button class="swiper-btn swiper-btn-prev" onclick="scrollSwiper(-1)" aria-label="Trước">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div class="featured-swiper" id="featured-swiper">
+          <div class="loading-center">
+            <div class="spinner"></div>
+            <span>Đang tải sản phẩm...</span>
+          </div>
         </div>
+        <button class="swiper-btn swiper-btn-next" onclick="scrollSwiper(1)" aria-label="Tiếp theo">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
       </div>
     </section>
 
     <!-- ============================================================
-       CATEGORIES
-       ============================================================ -->
-    <section style="margin: 40px 0;">
+         ALL PRODUCTS
+         ============================================================ -->
+    <section class="all-products-section">
       <div class="section-title">
-        <h2><i class="fa-solid fa-grid-2"></i> Danh Mục</h2>
+        <h2><i class="fa-solid fa-store"></i> Tất cả sản phẩm</h2>
       </div>
-      <div class="product-grid" id="category-grid" style="grid-template-columns: repeat(4, 1fr);"></div>
+      <div class="product-grid" id="all-products-grid">
+        <div class="loading-center" style="grid-column:1/-1;">
+          <div class="spinner"></div>
+          <span>Đang tải sản phẩm...</span>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -193,39 +204,31 @@
     setInterval(nextSlide, 5000);
 
     // ============================================================
-    // Load Featured Products
+    // Load Featured Products — Swiper
     // ============================================================
     async function loadFeatured() {
-      const grid = document.getElementById('featured-grid');
+      const container = document.getElementById('featured-swiper');
       try {
         const data = await API.getFeatured();
         if (!data.products || data.products.length === 0) {
-          grid.innerHTML = '<div class="loading-center" style="grid-column:1/-1;"><span>Chưa có sản phẩm nổi bật</span></div>';
+          container.innerHTML = '<div class="loading-center"><span>Chưa có sản phẩm nổi bật</span></div>';
           return;
         }
-        grid.innerHTML = data.products.map((p, idx) => renderProductCard(p, idx)).join('');
+        container.innerHTML = data.products.map((p, idx) => renderProductCard(p, idx)).join('');
       } catch (err) {
-        grid.innerHTML = '<div class="loading-center" style="grid-column:1/-1;"><span>Lỗi tải sản phẩm: ' + err.message + '</span></div>';
+        container.innerHTML = '<div class="loading-center"><span>Lỗi tải sản phẩm: ' + err.message + '</span></div>';
       }
     }
 
     // ============================================================
-    // Load Categories
+    // Swiper Scroll
     // ============================================================
-    async function loadCategories() {
-      const grid = document.getElementById('category-grid');
-      try {
-        const cats = await API.getCategories();
-        grid.innerHTML = cats.map(c => `
-          <a href="/products.html?category=${c.id}" class="product-card" style="text-align:center;padding:32px 16px;justify-content:center;align-items:center;">
-            <i class="fa-solid ${c.icon}" style="font-size:48px;color:var(--accent);margin-bottom:16px;"></i>
-            <h3 style="font-family:var(--font-body);font-size:18px;font-weight:700;text-transform:none;letter-spacing:0;color:var(--text-primary);">${c.name}</h3>
-            <span style="font-size:13px;color:var(--text-secondary);">Xem sản phẩm <i class="fa-solid fa-arrow-right"></i></span>
-          </a>
-        `).join('');
-      } catch (err) {
-        grid.innerHTML = '';
-      }
+    function scrollSwiper(dir) {
+      const container = document.getElementById('featured-swiper');
+      const card = container.querySelector('.product-card');
+      if (!card) return;
+      const cardWidth = card.offsetWidth + 16; // card + gap
+      container.scrollBy({ left: cardWidth * 2 * dir, behavior: 'smooth' });
     }
 
     // ============================================================
@@ -259,6 +262,24 @@
     }
 
     // ============================================================
+    // Load All Products
+    // ============================================================
+    async function loadAllProducts() {
+      const grid = document.getElementById('all-products-grid');
+      try {
+        const data = await API.getProducts({ limit: 50 });
+        const items = data.products || data;
+        if (!items || items.length === 0) {
+          grid.innerHTML = '<div class="loading-center" style="grid-column:1/-1;"><span>Chưa có sản phẩm</span></div>';
+          return;
+        }
+        grid.innerHTML = items.map((p, idx) => renderProductCard(p, idx)).join('');
+      } catch (err) {
+        grid.innerHTML = '<div class="loading-center" style="grid-column:1/-1;"><span>Lỗi tải sản phẩm: ' + err.message + '</span></div>';
+      }
+    }
+
+    // ============================================================
     // Init
     // ============================================================
     document.addEventListener('DOMContentLoaded', async () => {
@@ -267,7 +288,7 @@
       await Cart.load();
       await Compare.load();
       await loadFeatured();
-      await loadCategories();
+      await loadAllProducts();
     });
   </script>
 </body>
