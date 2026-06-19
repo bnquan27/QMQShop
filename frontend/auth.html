@@ -1,193 +1,219 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
+
 <head>
-  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('qmq_theme') || 'dark')</script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Đăng nhập & Đăng ký — QMQSHOP</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="css/style.css" />
+	<script>
+		document.documentElement.setAttribute(
+			"data-theme",
+			localStorage.getItem("qmq_theme") || "dark",
+		);
+	</script>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Đăng nhập & Đăng ký — QMQSHOP</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+	<link rel="stylesheet" href="css/style.css" />
 </head>
+
 <body class="auth-page">
-  <div class="auth-card">
-    <a href="/" class="logo">
-      <img src="../assets/logo.png" alt="QMQSHOP" class="logo-img" />
-      <div class="logo-text" style="align-items:center;">
-        <span class="logo-brand" style="font-size:24px;">QMQ<span>SHOP</span></span>
-      </div>
-    </a>
+	<div class="auth-card">
+		<a href="/" class="logo">
+			<img src="../assets/logo.png" alt="QMQSHOP" class="logo-img" />
+			<div class="logo-text" style="align-items: center">
+				<span class="logo-brand" style="font-size: 24px">QMQ<span>SHOP</span></span>
+			</div>
+		</a>
 
-    <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchTab('login')">Đăng nhập</button>
-      <button class="auth-tab" onclick="switchTab('register')">Đăng ký</button>
-    </div>
+		<div class="auth-tabs">
+			<button class="auth-tab active" onclick="switchTab('login')">
+				Đăng nhập
+			</button>
+			<button class="auth-tab" onclick="switchTab('register')">
+				Đăng ký
+			</button>
+		</div>
 
-    <!-- Login Form -->
-    <form class="auth-form active" id="login-form" onsubmit="handleLogin(event)">
-      <h2>Chào mừng trở lại</h2>
-      <div class="form-group">
-        <div class="form-input-icon">
-          <i class="fa-regular fa-envelope"></i>
-          <input type="email" class="form-input" id="login-email" placeholder="Email của bạn" required />
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="form-input-icon">
-          <i class="fa-solid fa-lock"></i>
-          <input type="password" class="form-input" id="login-password" placeholder="Mật khẩu" required />
-        </div>
-      </div>
-      <div class="auth-links">
-        <label class="form-check">
-          <input type="checkbox" checked /> Ghi nhớ
-        </label>
-        <a href="#">Quên mật khẩu?</a>
-      </div>
-      <button type="submit" class="btn-primary w-full" id="login-btn" style="justify-content:center;">
-        Đăng nhập
-      </button>
-      <p class="text-center mt-16" style="font-size:13px;color:var(--text-muted);">
-        Chưa có tài khoản? <a href="#" onclick="switchTab('register');return false;" style="color:var(--accent);font-weight:600;">Đăng ký ngay</a>
-      </p>
-    </form>
+		<!-- Login Form -->
+		<form class="auth-form active" id="login-form" onsubmit="handleLogin(event)">
+			<h2>Chào mừng trở lại</h2>
+			<div class="form-group">
+				<div class="form-input-icon">
+					<i class="fa-regular fa-envelope"></i>
+					<input type="email" class="form-input" id="login-email" placeholder="Email của bạn" required />
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="form-input-icon">
+					<i class="fa-solid fa-lock"></i>
+					<input type="password" class="form-input" id="login-password" placeholder="Mật khẩu" required />
+				</div>
+			</div>
+			<button type="submit" class="btn-primary w-full" id="login-btn" style="justify-content: center">
+				Đăng nhập
+			</button>
+			<p class="text-center mt-16" style="font-size: 13px; color: var(--text-muted)">
+				Chưa có tài khoản?
+				<a href="#" onclick="
+              switchTab('register');
+              return false;
+            " style="color: var(--accent); font-weight: 600">Đăng ký ngay</a>
+			</p>
+		</form>
 
-    <!-- Register Form -->
-    <form class="auth-form" id="register-form" onsubmit="handleRegister(event)">
-      <h2>Tạo tài khoản mới</h2>
-      <div class="form-row">
-        <div class="form-group">
-          <div class="form-input-icon">
-            <i class="fa-regular fa-user"></i>
-            <input type="text" class="form-input" id="reg-name" placeholder="Họ và tên" required />
-          </div>
-        </div>
-        <div class="form-group">
-          <div class="form-input-icon">
-            <i class="fa-regular fa-envelope"></i>
-            <input type="email" class="form-input" id="reg-email" placeholder="Email" required />
-          </div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <div class="form-input-icon">
-            <i class="fa-solid fa-phone"></i>
-            <input type="tel" class="form-input" id="reg-phone" placeholder="Số điện thoại" pattern="[0-9]{10,11}" />
-          </div>
-        </div>
-        <div class="form-group">
-          <div class="form-input-icon">
-            <i class="fa-solid fa-map-location-dot"></i>
-            <input type="text" class="form-input" id="reg-address" placeholder="Địa chỉ" />
-          </div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <div class="form-input-icon">
-            <i class="fa-solid fa-lock"></i>
-            <input type="password" class="form-input" id="reg-password" placeholder="Mật khẩu (6+ ký tự)" minlength="6" required />
-          </div>
-        </div>
-        <div class="form-group">
-          <div class="form-input-icon">
-            <i class="fa-solid fa-shield"></i>
-            <input type="password" class="form-input" id="reg-confirm" placeholder="Xác nhận mật khẩu" required />
-          </div>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-check">
-          <input type="checkbox" required /> Tôi đồng ý với <a href="#" style="color:var(--accent);">điều khoản dịch vụ</a>
-        </label>
-      </div>
-      <button type="submit" class="btn-primary w-full" id="register-btn" style="justify-content:center;">
-        Đăng ký
-      </button>
-      <p class="text-center mt-16" style="font-size:13px;color:var(--text-muted);">
-        Đã có tài khoản? <a href="#" onclick="switchTab('login');return false;" style="color:var(--accent);font-weight:600;">Đăng nhập</a>
-      </p>
-    </form>
-  </div>
+		<!-- Register Form -->
+		<form class="auth-form" id="register-form" onsubmit="handleRegister(event)">
+			<h2>Tạo tài khoản mới</h2>
+			<div class="form-row">
+				<div class="form-group">
+					<div class="form-input-icon">
+						<i class="fa-regular fa-user"></i>
+						<input type="text" class="form-input" id="reg-name" placeholder="Họ và tên" required />
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="form-input-icon">
+						<i class="fa-regular fa-envelope"></i>
+						<input type="email" class="form-input" id="reg-email" placeholder="Email" required />
+					</div>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<div class="form-input-icon">
+						<i class="fa-solid fa-phone"></i>
+						<input type="tel" class="form-input" id="reg-phone" placeholder="Số điện thoại" pattern="[0-9]{10,11}" />
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="form-input-icon">
+						<i class="fa-solid fa-map-location-dot"></i>
+						<input type="text" class="form-input" id="reg-address" placeholder="Địa chỉ" />
+					</div>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<div class="form-input-icon">
+						<i class="fa-solid fa-lock"></i>
+						<input type="password" class="form-input" id="reg-password" placeholder="Mật khẩu (6+ ký tự)" minlength="6"
+							required />
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="form-input-icon">
+						<i class="fa-solid fa-shield"></i>
+						<input type="password" class="form-input" id="reg-confirm" placeholder="Xác nhận mật khẩu" required />
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="form-check">
+					<input type="checkbox" required /> Tôi đồng ý với
+					<a href="#" style="color: var(--accent)">điều khoản dịch vụ</a>
+				</label>
+			</div>
+			<button type="submit" class="btn-primary w-full" id="register-btn" style="justify-content: center">
+				Đăng ký
+			</button>
+			<p class="text-center mt-16" style="font-size: 13px; color: var(--text-muted)">
+				Đã có tài khoản?
+				<a href="#" onclick="
+              switchTab('login');
+              return false;
+            " style="color: var(--accent); font-weight: 600">Đăng nhập</a>
+			</p>
+		</form>
+	</div>
 
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="js/compare.js"></script>
-  <script>
-    function switchTab(tab) {
-      document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+	<script src="js/api.js"></script>
+	<script src="js/auth.js"></script>
+	<script src="js/cart.js"></script>
+	<script src="js/compare.js"></script>
+	<script>
+		function switchTab(tab) {
+			document
+				.querySelectorAll(".auth-tab")
+				.forEach((t) => t.classList.remove("active"));
+			document
+				.querySelectorAll(".auth-form")
+				.forEach((f) => f.classList.remove("active"));
 
-      if (tab === 'login') {
-        document.querySelectorAll('.auth-tab')[0].classList.add('active');
-        document.getElementById('login-form').classList.add('active');
-      } else {
-        document.querySelectorAll('.auth-tab')[1].classList.add('active');
-        document.getElementById('register-form').classList.add('active');
-      }
-    }
+			if (tab === "login") {
+				document.querySelectorAll(".auth-tab")[0].classList.add("active");
+				document.getElementById("login-form").classList.add("active");
+			} else {
+				document.querySelectorAll(".auth-tab")[1].classList.add("active");
+				document.getElementById("register-form").classList.add("active");
+			}
+		}
 
-    async function handleLogin(e) {
-      e.preventDefault();
-      const btn = document.getElementById('login-btn');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner spinner-sm"></span> Đang xử lý...';
+		async function handleLogin(e) {
+			e.preventDefault();
+			const btn = document.getElementById("login-btn");
+			btn.disabled = true;
+			btn.innerHTML =
+				'<span class="spinner spinner-sm"></span> Đang xử lý...';
 
-      try {
-        const email = document.getElementById('login-email').value.trim();
-        const password = document.getElementById('login-password').value;
-        await Auth.login(email, password);
-        Toast.success('Đăng nhập thành công!');
-        setTimeout(() => { window.location.href = '/'; }, 800);
-      } catch (err) {
-        Toast.error(err.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = 'Đăng nhập';
-      }
-    }
+			try {
+				const email = document.getElementById("login-email").value.trim();
+				const password = document.getElementById("login-password").value;
+				await Auth.login(email, password);
+				Toast.success("Đăng nhập thành công!");
+				setTimeout(() => {
+					window.location.href = "/";
+				}, 800);
+			} catch (err) {
+				Toast.error(err.message);
+			} finally {
+				btn.disabled = false;
+				btn.innerHTML = "Đăng nhập";
+			}
+		}
 
-    async function handleRegister(e) {
-      e.preventDefault();
-      const password = document.getElementById('reg-password').value;
-      const confirm = document.getElementById('reg-confirm').value;
+		async function handleRegister(e) {
+			e.preventDefault();
+			const password = document.getElementById("reg-password").value;
+			const confirm = document.getElementById("reg-confirm").value;
 
-      if (password !== confirm) {
-        Toast.error('Mật khẩu xác nhận không khớp');
-        return;
-      }
+			if (password !== confirm) {
+				Toast.error("Mật khẩu xác nhận không khớp");
+				return;
+			}
 
-      const btn = document.getElementById('register-btn');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner spinner-sm"></span> Đang xử lý...';
+			const btn = document.getElementById("register-btn");
+			btn.disabled = true;
+			btn.innerHTML =
+				'<span class="spinner spinner-sm"></span> Đang xử lý...';
 
-      try {
-        const data = {
-          email: document.getElementById('reg-email').value.trim(),
-          password: password,
-          full_name: document.getElementById('reg-name').value.trim(),
-          phone: document.getElementById('reg-phone').value.trim(),
-          address: document.getElementById('reg-address').value.trim()
-        };
-        await Auth.register(data);
-        Toast.success('Đăng ký thành công!');
-        setTimeout(() => { window.location.href = '/'; }, 800);
-      } catch (err) {
-        Toast.error(err.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = 'Đăng ký';
-      }
-    }
+			try {
+				const data = {
+					email: document.getElementById("reg-email").value.trim(),
+					password: password,
+					full_name: document.getElementById("reg-name").value.trim(),
+					phone: document.getElementById("reg-phone").value.trim(),
+					address: document.getElementById("reg-address").value.trim(),
+				};
+				await Auth.register(data);
+				Toast.success("Đăng ký thành công!");
+				setTimeout(() => {
+					window.location.href = "/";
+				}, 800);
+			} catch (err) {
+				Toast.error(err.message);
+			} finally {
+				btn.disabled = false;
+				btn.innerHTML = "Đăng ký";
+			}
+		}
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      await Auth.init();
-      await Compare.load();
-      if (Auth.isLoggedIn()) {
-        window.location.href = '/';
-      }
-    });
-  </script>
+		document.addEventListener("DOMContentLoaded", async () => {
+			await Auth.init();
+			await Compare.load();
+			if (Auth.isLoggedIn()) {
+				window.location.href = "/";
+			}
+		});
+	</script>
 </body>
+
 </html>

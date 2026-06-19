@@ -88,6 +88,9 @@ const API = {
   getOrder(id) {
     return this.request('GET', '/api/orders/' + id);
   },
+  cancelOrder(id) {
+    return this.request('PUT', '/api/orders/' + id + '/cancel');
+  },
 
   // User profile
   updateProfile(data) {

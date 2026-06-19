@@ -236,9 +236,10 @@
       const discount = p.old_price && p.old_price > p.price
         ? Math.round((1 - p.price / p.old_price) * 100)
         : 0;
+      const oos = p.stock < 1;
       return `
         <div class="product-card">
-          ${discount > 0 ? `<span class="badge badge-red">-${discount}%</span>` : ''}
+          ${oos ? '<span class="badge badge-gray">Hết hàng</span>' : (discount > 0 ? `<span class="badge badge-red">-${discount}%</span>` : '')}
           <a href="/product.html?id=${p.id}" class="product-img-wrap">
             <img src="${img}" alt="${p.name}" loading="lazy" />
           </a>
@@ -252,9 +253,7 @@
             <span class="price-current">${formatPrice(p.price)}</span>
             ${p.old_price ? `<span class="price-old">${formatPrice(p.old_price)}</span>` : ''}
           </div>
-          <button class="btn-add-cart" onclick="event.preventDefault(); Cart.add(${p.id})">
-            <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
-          </button>
+          ${oos ? '<button class="btn-add-cart" disabled style="opacity:0.4;cursor:not-allowed;">Hết hàng</button>' : `<button class="btn-add-cart" onclick="event.preventDefault(); Cart.add(${p.id})"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>`}
         </div>
       `;
     }

@@ -501,6 +501,17 @@ func CreateOrder(userID int, req models.OrderRequest, cartItems []models.CartWit
 	}
 	defer tx.Rollback()
 
+	// Check stock for all items before proceeding
+	var outOfStock []string
+	for _, ci := range cartItems {
+		if ci.Stock < ci.Quantity {
+			outOfStock = append(outOfStock, ci.ProductName)
+		}
+	}
+	if len(outOfStock) > 0 {
+		return nil, fmt.Errorf("sản phẩm đã hết hàng: %s", strings.Join(outOfStock, ", "))
+	}
+
 	// Calculate total
 	var total int64
 	for _, item := range cartItems {
@@ -520,12 +531,19 @@ func CreateOrder(userID int, req models.OrderRequest, cartItems []models.CartWit
 		return nil, err
 	}
 
-	// Insert order items
+	// Insert order items & decrement stock
 	for _, ci := range cartItems {
 		_, err = tx.Exec(
 			`INSERT INTO order_items (order_id, product_id, product_name, quantity, price)
 			 VALUES ($1, $2, $3, $4, $5)`,
 			order.ID, ci.ProductID, ci.ProductName, ci.Quantity, ci.ProductPrice,
+		)
+		if err != nil {
+			return nil, err
+		}
+		_, err = tx.Exec(
+			`UPDATE products SET stock = stock - $1 WHERE id = $2 AND stock >= $1`,
+			ci.Quantity, ci.ProductID,
 		)
 		if err != nil {
 			return nil, err
@@ -685,6 +703,58 @@ func UpdateOrderStatus(id int, status string) error {
 		return fmt.Errorf("not found")
 	}
 	return nil
+}
+
+func CancelOrder(orderID int) error {
+	tx, err := DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// Collect items first, then close rows before doing updates
+	rows, err := tx.Query(
+		`SELECT product_id, quantity FROM order_items WHERE order_id = $1`, orderID,
+	)
+	if err != nil {
+		return err
+	}
+
+	type item struct{ productID, quantity int }
+	var items []item
+	for rows.Next() {
+		var it item
+		if err := rows.Scan(&it.productID, &it.quantity); err != nil {
+			rows.Close()
+			return err
+		}
+		items = append(items, it)
+	}
+	rows.Close()
+	if err = rows.Err(); err != nil {
+		return err
+	}
+
+	for _, it := range items {
+		_, err = tx.Exec(
+			`UPDATE products SET stock = stock + $1 WHERE id = $2`, it.quantity, it.productID,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Update order status
+	res, err := tx.Exec(`UPDATE orders SET status = 'cancelled' WHERE id = $1`, orderID)
+	if err != nil {
+		return err
+	}
+	n, _ := res.RowsAffected()
+	if n == 0 {
+		return fmt.Errorf("not found")
+	}
+
+	return tx.Commit()
 }
 
 // ============================================================

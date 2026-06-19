@@ -173,7 +173,7 @@ const Compare = {
     const specKeys = ['Hình ảnh', 'Tên sản phẩm', 'Giá', ...Array.from(allKeys)];
     const table = document.getElementById('cms-compare-table');
 
-    table.style.gridTemplateColumns = `200px repeat(${products.length}, minmax(240px, 1fr))`;
+    table.style.gridTemplateColumns = `200px repeat(${products.length}, minmax(240px, 300px))`;
     table.innerHTML = specKeys.map(key => {
       const label = `<div class="compare-label">${key}</div>`;
       const cells = products.map(p => {

@@ -105,6 +105,25 @@
           return;
         }
 
+        // Check for out-of-stock items
+        const oosItems = items.filter(item => item.stock < 1 || item.quantity > item.stock);
+        if (oosItems.length > 0) {
+          document.getElementById('checkout-loading').style.display = 'none';
+          document.getElementById('checkout-empty').style.display = 'block';
+          document.getElementById('checkout-empty').querySelector('i').className = 'fa-regular fa-circle-xmark';
+          document.getElementById('checkout-empty').querySelector('i').style.color = '#dc2626';
+          document.getElementById('checkout-empty').querySelector('h3').textContent = 'Sản phẩm đã hết hàng';
+          document.getElementById('checkout-empty').querySelector('p').innerHTML =
+            'Một số sản phẩm trong giỏ hàng đã hết hàng hoặc không đủ số lượng:<br><br>' +
+            oosItems.map(i =>
+              `<span style="color:var(--accent);">• ${i.product_name}</span>`
+            ).join('<br>') +
+            '<br><br>Vui lòng xóa sản phẩm khỏi giỏ hàng để tiếp tục.';
+          document.getElementById('checkout-empty').querySelector('a').textContent = 'Về giỏ hàng';
+          document.getElementById('checkout-empty').querySelector('a').href = '/cart.html';
+          return;
+        }
+
         document.getElementById('checkout-form').style.display = 'grid';
         const user = Auth.getUser();
         if (user) {

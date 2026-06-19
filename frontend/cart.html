@@ -106,29 +106,33 @@
         document.getElementById('cart-loading').style.display = 'none';
 
         if (items.length === 0) {
+          document.getElementById('cart-content').style.display = 'none';
           document.getElementById('cart-empty').style.display = 'block';
           return;
         }
 
+        document.getElementById('cart-empty').style.display = 'none';
         document.getElementById('cart-content').style.display = 'block';
         const tbody = document.getElementById('cart-items');
         tbody.innerHTML = items.map(item => {
           const subtotal = item.product_price * item.quantity;
+          const outOfStock = item.stock < 1;
+          const lowStock = !outOfStock && item.quantity >= item.stock;
           return `
-            <tr>
+            <tr${outOfStock ? ' style="opacity:0.5;"' : ''}>
               <td><img src="${item.product_image || ''}" alt="" class="cart-item-img" /></td>
               <td>
                 <div class="cart-item-info">
                   <h4><a href="/product.html?id=${item.product_id}" style="color:var(--text-primary);">${item.product_name}</a></h4>
-                  <p>SL: ${item.stock} có sẵn</p>
+                  ${outOfStock ? '<p style="color:#dc2626;font-weight:600;"><i class="fa-regular fa-circle-xmark"></i> Hết hàng</p>' : `<p style="color:${lowStock ? '#d97706' : 'var(--text-secondary)'};">Còn ${item.stock} sản phẩm</p>`}
                 </div>
               </td>
               <td class="price-current" style="font-family:var(--font-display);">${formatPrice(item.product_price)}</td>
               <td>
                 <div class="qty-btn">
-                  <button onclick="updateQty(${item.id}, ${item.quantity - 1})"><i class="fa-solid fa-minus"></i></button>
+                  <button onclick="updateQty(${item.id}, ${item.quantity - 1})"${outOfStock ? ' disabled style="opacity:0.3;"' : ''}><i class="fa-solid fa-minus"></i></button>
                   <span>${item.quantity}</span>
-                  <button onclick="updateQty(${item.id}, ${item.quantity + 1})"><i class="fa-solid fa-plus"></i></button>
+                  <button onclick="updateQty(${item.id}, ${item.quantity + 1})"${outOfStock || lowStock ? ' disabled style="opacity:0.3;"' : ''}><i class="fa-solid fa-plus"></i></button>
                 </div>
               </td>
               <td style="font-family:var(--font-display);color:var(--accent);">${formatPrice(subtotal)}</td>

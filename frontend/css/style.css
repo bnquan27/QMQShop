@@ -874,7 +874,12 @@ h5 {
 }
 
 .btn-danger {
+	font-weight: bold;
+	padding: 10px;
+	border: none;
+	border-radius: 10px;
 	background: #dc2626;
+	cursor: pointer;
 }
 
 .btn-danger:hover {
@@ -1096,6 +1101,12 @@ h5 {
 	border: 1px solid rgba(217, 119, 6, 0.3);
 }
 
+.badge-gray {
+	background: darkgray;
+	color: var(--text-muted);
+	border: 1px solid rgba(128, 128, 128, 0.3);
+}
+
 /* ============================================================
    Forms
    ============================================================ */
@@ -1264,24 +1275,6 @@ textarea.form-input {
 	margin-bottom: 20px;
 	text-align: center;
 	color: var(--text-primary);
-}
-
-.auth-links {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 20px;
-	font-size: 13px;
-}
-
-.auth-links a {
-	color: var(--accent);
-	font-weight: 500;
-}
-
-.auth-links a:hover {
-	color: var(--accent-hover);
-	text-decoration: underline;
 }
 
 /* ============================================================
@@ -1640,8 +1633,8 @@ textarea.form-input {
 }
 
 .status-cancelled {
-	background: rgba(220, 38, 38, 0.15);
-	color: #dc2626;
+	background: rgba(128, 128, 128, 0.15);
+	color: var(--text-muted);
 }
 
 .order-detail {
@@ -1688,7 +1681,8 @@ textarea.form-input {
 	gap: 0;
 	border: 1px solid var(--border);
 	border-radius: var(--radius-md);
-	overflow: hidden;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
 }
 
 .compare-label {

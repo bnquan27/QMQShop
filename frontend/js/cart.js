@@ -25,9 +25,13 @@ const Cart = {
       window.location.href = '/auth.html';
       return;
     }
-    await API.addToCart(productId, quantity);
-    await this.load();
-    Toast.success('Đã thêm vào giỏ hàng');
+    try {
+      await API.addToCart(productId, quantity);
+      await this.load();
+      Toast.success('Đã thêm vào giỏ hàng');
+    } catch (err) {
+      Toast.warning(err.message || 'Không thể thêm vào giỏ hàng');
+    }
   },
 
   // Update quantity

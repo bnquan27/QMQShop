@@ -61,6 +61,40 @@ func GetOrders(w http.ResponseWriter, r *http.Request) {
 }
 
 // GET /api/orders/{id} — get order detail with items
+// PUT /api/orders/{id}/cancel — cancel own order
+func CancelOrder(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value(middleware.UserKey).(*models.User)
+
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		middleware.JSON(w, http.StatusBadRequest, models.ErrorResponse{Error: "ID không hợp lệ"})
+		return
+	}
+
+	order, err := database.GetOrderByID(id, user.ID)
+	if err != nil {
+		middleware.JSON(w, http.StatusInternalServerError, models.ErrorResponse{Error: "Lỗi tải đơn hàng"})
+		return
+	}
+	if order == nil {
+		middleware.JSON(w, http.StatusNotFound, models.ErrorResponse{Error: "Không tìm thấy đơn hàng"})
+		return
+	}
+
+	if order.Status != "pending" && order.Status != "confirmed" {
+		middleware.JSON(w, http.StatusBadRequest, models.ErrorResponse{Error: "Không thể hủy đơn hàng ở trạng thái này"})
+		return
+	}
+
+	if err := database.CancelOrder(id); err != nil {
+		middleware.JSON(w, http.StatusInternalServerError, models.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	middleware.JSON(w, http.StatusOK, map[string]string{"message": "Đã hủy đơn hàng"})
+}
+
 func GetOrder(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(middleware.UserKey).(*models.User)
 

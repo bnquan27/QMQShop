@@ -42,9 +42,6 @@
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;margin-bottom:24px;">
       <h1 style="font-size:24px;letter-spacing:2px;">SẢN PHẨM</h1>
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-        <select class="form-input" id="category-filter" style="width:auto;padding:8px 36px 8px 12px;font-size:13px;" onchange="applyFilters()">
-          <option value="">Tất cả danh mục</option>
-        </select>
         <select class="form-input" id="sort-select" style="width:auto;padding:8px 36px 8px 12px;font-size:13px;" onchange="applyFilters()">
           <option value="newest">Mới nhất</option>
           <option value="price_asc">Giá: Thấp → Cao</option>
@@ -102,19 +99,6 @@
     const params = new URLSearchParams(window.location.search);
     let currentPage = 1;
 
-    async function loadCategories() {
-      try {
-        const cats = await API.getCategories();
-        const sel = document.getElementById('category-filter');
-        cats.forEach(c => {
-          const opt = document.createElement('option');
-          opt.value = c.id;
-          opt.textContent = c.name;
-          sel.appendChild(opt);
-        });
-      } catch {}
-    }
-
     function applyFilters() {
       currentPage = 1;
       loadProducts();
@@ -130,8 +114,8 @@
       grid.innerHTML = '<div class="loading-center" style="grid-column:1/-1;"><div class="spinner"></div><span>Đang tải...</span></div>';
 
       const search = document.getElementById('search-input').value.trim();
-      const category = document.getElementById('category-filter').value;
       const sort = document.getElementById('sort-select').value;
+      const category = params.get('category') || '';
 
       // Preserve URL params
       const url = new URL(window.location);
@@ -167,8 +151,9 @@
     function renderCard(p) {
       const img = p.images && p.images[0] || '';
       const discount = p.old_price > p.price ? Math.round((1 - p.price/p.old_price)*100) : 0;
+      const oos = p.stock < 1;
       return `<div class="product-card">
-        ${discount > 0 ? `<span class="badge badge-red">-${discount}%</span>` : ''}
+        ${oos ? '<span class="badge badge-gray">Hết hàng</span>' : (discount > 0 ? `<span class="badge badge-red">-${discount}%</span>` : '')}
         <a href="/product.html?id=${p.id}" class="product-img-wrap">
           <img src="${img}" alt="${p.name}" loading="lazy" />
         </a>
@@ -178,7 +163,7 @@
           <span class="price-current">${formatPrice(p.price)}</span>
           ${p.old_price ? `<span class="price-old">${formatPrice(p.old_price)}</span>` : ''}
         </div>
-        <button class="btn-add-cart" onclick="event.preventDefault(); Cart.add(${p.id})"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>
+        ${oos ? '<button class="btn-add-cart" disabled style="opacity:0.4;cursor:not-allowed;">Hết hàng</button>' : `<button class="btn-add-cart" onclick="event.preventDefault(); Cart.add(${p.id})"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>`}
       </div>`;
     }
 
@@ -201,11 +186,9 @@
       Auth.updateHeader();
       await Cart.load();
       await Compare.load();
-      await loadCategories();
 
       // Apply URL params
       const sp = params.get('search'); if (sp) document.getElementById('search-input').value = sp;
-      const cat = params.get('category'); if (cat) document.getElementById('category-filter').value = cat;
       const sort = params.get('sort'); if (sort) document.getElementById('sort-select').value = sort;
       const page = params.get('page'); if (page) currentPage = parseInt(page);
 

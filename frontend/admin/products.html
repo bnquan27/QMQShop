@@ -119,27 +119,11 @@
     </div>
   </div>
 
-  <!-- Delete Confirm Modal -->
-  <div class="modal-overlay" id="delete-modal">
-    <div class="modal" style="max-width:400px;">
-      <div class="modal-header">
-        <h3>Xác nhận xoá</h3>
-        <button class="modal-close" onclick="closeDeleteModal()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <p style="color:var(--text-secondary);margin-bottom:20px;">Bạn chắc chắn muốn xoá sản phẩm <strong id="delete-name"></strong>?</p>
-      <div style="display:flex;gap:12px;justify-content:flex-end;">
-        <button class="btn-outline btn-sm" onclick="closeDeleteModal()">Huỷ</button>
-        <button class="btn-primary btn-sm btn-danger" id="delete-confirm-btn" onclick="confirmDelete()">Xoá</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="../js/api.js"></script>
+	<script src="../js/api.js"></script>
   <script src="../js/auth.js"></script>
   <script src="../js/cart.js"></script>
   <script>
     let allProducts = [];
-    let deleteTargetId = null;
 
     async function loadProducts() {
       try {
@@ -177,7 +161,6 @@
           <td>${p.featured ? '<span class="badge badge-red"><i class="fa-solid fa-fire"></i></span>' : '<span class="badge badge-dark">—</span>'}</td>
           <td>
             <button class="btn-ghost btn-sm" onclick="openEditModal(${p.id})" style="color:var(--accent);"><i class="fa-regular fa-pen-to-square"></i></button>
-            <button class="btn-ghost btn-sm" onclick="openDeleteModal(${p.id})" style="color:#dc2626;"><i class="fa-regular fa-trash-can"></i></button>
           </td>
         </tr>
       `).join('');
@@ -299,40 +282,6 @@
       } finally {
         btn.disabled = false;
         btn.textContent = isEdit ? 'Cập nhật' : 'Thêm';
-      }
-    }
-
-    // ============================================================
-    // Delete
-    // ============================================================
-    function openDeleteModal(id) {
-      const p = allProducts.find(x => x.id === id);
-      if (!p) return;
-      deleteTargetId = id;
-      document.getElementById('delete-name').textContent = p.name;
-      document.getElementById('delete-modal').classList.add('show');
-    }
-
-    function closeDeleteModal() {
-      deleteTargetId = null;
-      document.getElementById('delete-modal').classList.remove('show');
-    }
-
-    async function confirmDelete() {
-      if (!deleteTargetId) return;
-      const btn = document.getElementById('delete-confirm-btn');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner spinner-sm"></span>';
-      try {
-        await API.adminDeleteProduct(deleteTargetId);
-        Toast.success('Đã xoá sản phẩm');
-        closeDeleteModal();
-        await loadProducts();
-      } catch (err) {
-        Toast.error(err.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Xoá';
       }
     }
 

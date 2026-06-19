@@ -33,10 +33,14 @@ func AddToCart(w http.ResponseWriter, r *http.Request) {
 		req.Quantity = 1
 	}
 
-	// Verify product exists
+	// Verify product exists & has stock
 	product, _ := database.GetProductByID(req.ProductID)
 	if product == nil {
 		middleware.JSON(w, http.StatusNotFound, models.ErrorResponse{Error: "Sản phẩm không tồn tại"})
+		return
+	}
+	if product.Stock < 1 {
+		middleware.JSON(w, http.StatusBadRequest, models.ErrorResponse{Error: "Sản phẩm đã hết hàng"})
 		return
 	}
 

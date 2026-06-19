@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/bnquan27/Project/database"
 	"github.com/bnquan27/Project/middleware"
@@ -81,7 +82,13 @@ func AdminDeleteProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := database.DeleteProduct(id); err != nil {
-		middleware.JSON(w, http.StatusNotFound, models.ErrorResponse{Error: "Không tìm thấy sản phẩm"})
+		if strings.Contains(err.Error(), "violates foreign key constraint") {
+			middleware.JSON(w, http.StatusConflict, models.ErrorResponse{Error: "Không thể xóa sản phẩm đã có trong đơn hàng"})
+		} else if err.Error() == "not found" {
+			middleware.JSON(w, http.StatusNotFound, models.ErrorResponse{Error: "Không tìm thấy sản phẩm"})
+		} else {
+			middleware.JSON(w, http.StatusInternalServerError, models.ErrorResponse{Error: "Lỗi xóa sản phẩm"})
+		}
 		return
 	}
 	middleware.JSON(w, http.StatusOK, map[string]string{"message": "Đã xóa sản phẩm"})

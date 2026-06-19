@@ -81,6 +81,7 @@ func main() {
 	mux.HandleFunc("POST /api/orders", middleware.RequireAuth(handlers.PlaceOrder))
 	mux.HandleFunc("GET /api/orders", middleware.RequireAuth(handlers.GetOrders))
 	mux.HandleFunc("GET /api/orders/{id}", middleware.RequireAuth(handlers.GetOrder))
+	mux.HandleFunc("PUT /api/orders/{id}/cancel", middleware.RequireAuth(handlers.CancelOrder))
 
 	// ============================================================
 	// User profile endpoints (require auth)

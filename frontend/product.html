@@ -1,204 +1,257 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
+
 <head>
-  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('qmq_theme') || 'dark')</script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chi tiết sản phẩm — QMQSHOP</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="css/style.css" />
+	<script>
+		document.documentElement.setAttribute(
+			"data-theme",
+			localStorage.getItem("qmq_theme") || "dark",
+		);
+	</script>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Chi tiết sản phẩm — QMQSHOP</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+	<link rel="stylesheet" href="css/style.css" />
 </head>
+
 <body>
-  <header class="main-header">
-    <div class="header-inner">
-      <button class="hamburger" onclick="document.querySelector('.category-nav').classList.toggle('show')"><span></span><span></span><span></span></button>
-      <a href="/" class="logo">
-        <img src="../assets/logo.png" alt="" class="logo-img" />
-        <div class="logo-text">
-          <span class="logo-brand">QMQ<span>SHOP</span></span>
-          <span class="logo-sub">SINCE 2026</span>
-        </div>
-      </a>
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-        <input type="text" placeholder="Tìm sản phẩm..." onkeydown="if(event.key==='Enter'&&this.value.trim()) window.location.href='/products.html?search='+encodeURIComponent(this.value.trim())" />
-      </div>
-      <div class="header-tools" id="auth-header-section"></div>
-    </div>
-  </header>
+	<header class="main-header">
+		<div class="header-inner">
+			<button class="hamburger" onclick="
+            document.querySelector('.category-nav').classList.toggle('show')
+          ">
+				<span></span><span></span><span></span>
+			</button>
+			<a href="/" class="logo">
+				<img src="../assets/logo.png" alt="" class="logo-img" />
+				<div class="logo-text">
+					<span class="logo-brand">QMQ<span>SHOP</span></span>
+					<span class="logo-sub">SINCE 2026</span>
+				</div>
+			</a>
+			<div class="search-box">
+				<i class="fa-solid fa-magnifying-glass search-icon"></i>
+				<input type="text" placeholder="Tìm sản phẩm..." onkeydown="
+              if (event.key === 'Enter' && this.value.trim())
+                window.location.href =
+                  '/products.html?search=' +
+                  encodeURIComponent(this.value.trim());
+            " />
+			</div>
+			<div class="header-tools" id="auth-header-section"></div>
+		</div>
+	</header>
 
-  <nav class="category-nav">
-    <div class="nav-inner">
-      <a href="/" class="nav-item"><i class="fa-solid fa-house"></i> Trang chủ</a>
-      <a href="/products.html" class="nav-item"><i class="fa-solid fa-store"></i> Sản phẩm</a>
-      <a href="#" class="nav-item" id="breadcrumb-category"></a>
-    </div>
-  </nav>
+	<nav class="category-nav">
+		<div class="nav-inner">
+			<a href="/" class="nav-item"><i class="fa-solid fa-house"></i> Trang chủ</a>
+			<a href="/products.html" class="nav-item"><i class="fa-solid fa-store"></i> Sản phẩm</a>
+			<a href="#" class="nav-item" id="breadcrumb-category"></a>
+		</div>
+	</nav>
 
-  <main class="container">
-    <div class="loading-center" id="loading-state">
-      <div class="spinner"></div>
-      <span>Đang tải...</span>
-    </div>
+	<main class="container">
+		<div class="loading-center" id="loading-state">
+			<div class="spinner"></div>
+			<span>Đang tải...</span>
+		</div>
 
-    <div class="product-detail" id="product-detail" style="display:none;">
-      <div class="product-detail-images">
-        <img id="product-image" src="" alt="" />
-      </div>
+		<div class="product-detail" id="product-detail" style="display: none">
+			<div class="product-detail-images">
+				<img id="product-image" src="" alt="" />
+			</div>
 
-      <div class="product-detail-info">
-        <h1 id="product-name"></h1>
-        <div class="product-detail-meta" id="product-meta"></div>
+			<div class="product-detail-info">
+				<h1 id="product-name"></h1>
+				<div class="product-detail-meta" id="product-meta"></div>
 
-        <div class="product-detail-price">
-          <span class="price-current" id="product-price"></span>
-          <span class="price-old" id="product-old-price"></span>
-          <span class="badge badge-red" id="product-badge" style="display:none;"></span>
-        </div>
+				<div class="product-detail-price">
+					<span class="price-current" id="product-price"></span>
+					<span class="price-old" id="product-old-price"></span>
+					<span class="badge badge-red" id="product-badge" style="display: none"></span>
+				</div>
 
-        <p class="product-detail-desc" id="product-desc"></p>
+				<p class="product-detail-desc" id="product-desc"></p>
 
-        <table class="specs-table" id="specs-table"></table>
+				<table class="specs-table" id="specs-table"></table>
 
-        <div class="product-detail-actions">
-          <button class="btn-primary" id="btn-add-cart" onclick="addToCart()">
-            <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ hàng
-          </button>
-          <button class="btn-outline" onclick="addToCompare()">
-            <i class="fa-solid fa-scale-balanced"></i> So sánh
-          </button>
-        </div>
+				<div class="product-detail-actions">
+					<button class="btn-primary" id="btn-add-cart" onclick="addToCart()">
+						<i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ hàng
+					</button>
+					<button class="btn-outline" onclick="addToCompare()">
+						<i class="fa-solid fa-scale-balanced"></i> So sánh
+					</button>
+				</div>
 
-        <div style="margin-top:16px;font-size:13px;color:var(--text-muted);display:flex;gap:20px;flex-wrap:wrap;">
-          <span><i class="fa-solid fa-box" style="color:var(--accent);"></i> Kho: <strong id="product-stock"></strong></span>
-          <span><i class="fa-regular fa-clock" style="color:var(--accent);"></i> Đã đăng: <strong id="product-date"></strong></span>
-        </div>
-      </div>
-    </div>
+				<div style="
+              margin-top: 16px;
+              font-size: 13px;
+              color: var(--text-muted);
+              display: flex;
+              gap: 20px;
+              flex-wrap: wrap;
+            ">
+					<span><i class="fa-solid fa-box" style="color: var(--accent)"></i> Kho:
+						<strong id="product-stock"></strong></span>
+					<span><i class="fa-regular fa-clock" style="color: var(--accent)"></i>
+						Đã đăng: <strong id="product-date"></strong></span>
+				</div>
+			</div>
+		</div>
 
-    <div class="loading-center" id="error-state" style="display:none;">
-      <i class="fa-regular fa-face-frown" style="font-size:40px;color:var(--text-muted);"></i>
-      <span id="error-message">Không tìm thấy sản phẩm</span>
-      <a href="/products.html" class="btn-outline mt-16">Quay lại cửa hàng</a>
-    </div>
-  </main>
+		<div class="loading-center" id="error-state" style="display: none">
+			<i class="fa-regular fa-face-frown" style="font-size: 40px; color: var(--text-muted)"></i>
+			<span id="error-message">Không tìm thấy sản phẩm</span>
+			<a href="/products.html" class="btn-outline mt-16">Quay lại cửa hàng</a>
+		</div>
+	</main>
 
-  <footer class="main-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <span class="logo-brand">QMQ<span>SHOP</span></span>
-          <p style="margin-top:8px;color:var(--text-secondary);font-size:14px;">Laptop, PC Gaming & Linh Kiện Chính Hãng.</p>
-        </div>
-        <div class="footer-col">
-          <h5>Danh mục</h5>
-          <a href="/products.html?category=1">Laptop Gaming</a>
-          <a href="/products.html?category=2">PC Gaming</a>
-          <a href="/products.html?category=3">PC Văn Phòng</a>
-          <a href="/products.html?category=4">Linh Kiện</a>
-        </div>
-      </div>
-      <div class="footer-bottom"><span>&copy; 2026 QMQSHOP</span></div>
-    </div>
-  </footer>
+	<footer class="main-footer">
+		<div class="container">
+			<div class="footer-grid">
+				<div class="footer-brand">
+					<span class="logo-brand">QMQ<span>SHOP</span></span>
+					<p style="
+                margin-top: 8px;
+                color: var(--text-secondary);
+                font-size: 14px;
+              ">
+						Laptop, PC Gaming & Linh Kiện Chính Hãng.
+					</p>
+				</div>
+				<div class="footer-col">
+					<h5>Danh mục</h5>
+					<a href="/products.html?category=1">Laptop Gaming</a>
+					<a href="/products.html?category=2">PC Gaming</a>
+					<a href="/products.html?category=3">PC Văn Phòng</a>
+					<a href="/products.html?category=4">Linh Kiện</a>
+				</div>
+			</div>
+			<div class="footer-bottom"><span>&copy; 2026 QMQSHOP</span></div>
+		</div>
+	</footer>
 
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="js/compare.js"></script>
-  <script>
-    const productId = new URLSearchParams(window.location.search).get('id');
+	<script src="js/api.js"></script>
+	<script src="js/auth.js"></script>
+	<script src="js/cart.js"></script>
+	<script src="js/compare.js"></script>
+	<script>
+		const productId = new URLSearchParams(window.location.search).get("id");
 
-    async function loadProduct() {
-      if (!productId) { showError(); return; }
-      try {
-        const p = await API.getProduct(productId);
-        if (!p) { showError(); return; }
-        renderProduct(p);
-      } catch (err) {
-        showError(err.message);
-      }
-    }
+		async function loadProduct() {
+			if (!productId) {
+				showError();
+				return;
+			}
+			try {
+				const p = await API.getProduct(productId);
+				if (!p) {
+					showError();
+					return;
+				}
+				renderProduct(p);
+			} catch (err) {
+				showError(err.message);
+			}
+		}
 
-    function renderProduct(p) {
-      document.getElementById('loading-state').style.display = 'none';
-      document.getElementById('product-detail').style.display = 'grid';
+		function renderProduct(p) {
+			document.getElementById("loading-state").style.display = "none";
+			document.getElementById("product-detail").style.display = "grid";
 
-      document.title = p.name + ' — QMQSHOP';
-      document.getElementById('product-name').textContent = p.name;
+			document.title = p.name + " — QMQSHOP";
+			document.getElementById("product-name").textContent = p.name;
 
-      const img = p.images && p.images[0] || '';
-      document.getElementById('product-image').src = img;
-      document.getElementById('product-image').alt = p.name;
+			const img = (p.images && p.images[0]) || "";
+			document.getElementById("product-image").src = img;
+			document.getElementById("product-image").alt = p.name;
 
-      if (p.specs && p.specs.CPU) {
-        document.getElementById('product-meta').textContent = p.specs.CPU + (p.specs.GPU ? ' | ' + p.specs.GPU : '') + (p.specs.RAM ? ' | ' + p.specs.RAM : '');
-      }
+			if (p.specs && p.specs.CPU) {
+				document.getElementById("product-meta").textContent =
+					p.specs.CPU +
+					(p.specs.GPU ? " | " + p.specs.GPU : "") +
+					(p.specs.RAM ? " | " + p.specs.RAM : "");
+			}
 
-      document.getElementById('product-price').textContent = formatPrice(p.price);
-      if (p.old_price && p.old_price > p.price) {
-        document.getElementById('product-old-price').textContent = formatPrice(p.old_price);
-        const discount = Math.round((1 - p.price / p.old_price) * 100);
-        const badge = document.getElementById('product-badge');
-        badge.textContent = '-' + discount + '%';
-        badge.style.display = 'inline-flex';
-      }
+			document.getElementById("product-price").textContent = formatPrice(
+				p.price,
+			);
+			if (p.old_price && p.old_price > p.price) {
+				document.getElementById("product-old-price").textContent =
+					formatPrice(p.old_price);
+				const discount = Math.round((1 - p.price / p.old_price) * 100);
+				const badge = document.getElementById("product-badge");
+				badge.textContent = "-" + discount + "%";
+				badge.style.display = "inline-flex";
+			}
 
-      document.getElementById('product-desc').textContent = p.description;
+			document.getElementById("product-desc").textContent = p.description;
 
-      // Specs table
-      const specsTable = document.getElementById('specs-table');
-      if (p.specs && Object.keys(p.specs).length > 0) {
-        specsTable.innerHTML = Object.entries(p.specs)
-          .map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
-      } else {
-        specsTable.innerHTML = '';
-      }
+			// Specs table
+			const specsTable = document.getElementById("specs-table");
+			if (p.specs && Object.keys(p.specs).length > 0) {
+				specsTable.innerHTML = Object.entries(p.specs)
+					.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`)
+					.join("");
+			} else {
+				specsTable.innerHTML = "";
+			}
 
-      document.getElementById('product-stock').textContent = p.stock > 0 ? p.stock + ' sản phẩm' : 'Hết hàng';
-      document.getElementById('product-stock').style.color = p.stock > 0 ? '#10b981' : '#dc2626';
-      document.getElementById('product-date').textContent = new Date(p.created_at).toLocaleDateString('vi-VN');
+			document.getElementById("product-stock").textContent =
+				p.stock > 0 ? p.stock + " sản phẩm" : "Hết hàng";
+			document.getElementById("product-stock").style.color =
+				p.stock > 0 ? "#10b981" : "#dc2626";
+			document.getElementById("product-date").textContent = new Date(
+				p.created_at,
+			).toLocaleDateString("vi-VN");
 
-      // Disable cart button if out of stock
-      if (p.stock <= 0) {
-        document.getElementById('btn-add-cart').disabled = true;
-        document.getElementById('btn-add-cart').innerHTML = 'Hết hàng';
-      }
+			// Disable cart button if out of stock
+			if (p.stock <= 0) {
+				document.getElementById("btn-add-cart").disabled = true;
+				document.getElementById("btn-add-cart").innerHTML = "Hết hàng";
+			}
 
-      // Store product ID for cart/compare
-      window._currentProduct = p;
+			// Store product ID for cart/compare
+			window._currentProduct = p;
 
-      // Breadcrumb
-      const bc = document.getElementById('breadcrumb-category');
-      if (p.category_id) {
-        bc.href = '/products.html?category=' + p.category_id;
-        bc.textContent = p.specs && Object.keys(p.specs).length > 0 ? 'Chi tiết' : 'Sản phẩm';
-      }
-    }
+			// Breadcrumb
+			const bc = document.getElementById("breadcrumb-category");
+			if (p.category_id) {
+				bc.href = "/products.html?category=" + p.category_id;
+				bc.textContent =
+					p.specs && Object.keys(p.specs).length > 0
+						? "Chi tiết"
+						: "Sản phẩm";
+			}
+		}
 
-    function showError(msg) {
-      document.getElementById('loading-state').style.display = 'none';
-      document.getElementById('error-state').style.display = 'flex';
-      document.getElementById('error-message').textContent = msg || 'Không tìm thấy sản phẩm';
-    }
+		function showError(msg) {
+			document.getElementById("loading-state").style.display = "none";
+			document.getElementById("error-state").style.display = "flex";
+			document.getElementById("error-message").textContent =
+				msg || "Không tìm thấy sản phẩm";
+		}
 
-    async function addToCart() {
-      if (!window._currentProduct) return;
-      await Cart.add(window._currentProduct.id);
-    }
+		async function addToCart() {
+			if (!window._currentProduct) return;
+			await Cart.add(window._currentProduct.id);
+		}
 
-    async function addToCompare() {
-      if (!window._currentProduct) return;
-      await Compare.open(window._currentProduct.id);
-    }
+		async function addToCompare() {
+			if (!window._currentProduct) return;
+			await Compare.open(window._currentProduct.id);
+		}
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      await Auth.init();
-      Auth.updateHeader();
-      await Cart.load();
-      await Compare.load();
-      await loadProduct();
-    });
-  </script>
+		document.addEventListener("DOMContentLoaded", async () => {
+			await Auth.init();
+			Auth.updateHeader();
+			await Cart.load();
+			await Compare.load();
+			await loadProduct();
+		});
+	</script>
 </body>
+
 </html>
