@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/bnquan27/Project/database"
-	"github.com/bnquan27/Project/middleware"
-	"github.com/bnquan27/Project/models"
+	"github.com/bnquan27/QMQShop/backend/database"
+	"github.com/bnquan27/QMQShop/backend/middleware"
+	"github.com/bnquan27/QMQShop/backend/models"
 	"golang.org/x/crypto/bcrypt"
 )
 

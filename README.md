@@ -124,13 +124,6 @@ Make sure your PostgreSQL connection string matches the one expected by the app:
 postgres://postgres:postgres@localhost:5432/QMQSHOP?sslmode=disable
 ```
 
-### 2️⃣ Install Go Dependencies
-
-```bash
-go install github.com/lib/pq
-go install golang.org/x/crypto
-```
-
 ### 3️⃣ Run the Server
 
 ```bash

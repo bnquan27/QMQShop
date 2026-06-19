@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/bnquan27/Project/database"
-	"github.com/bnquan27/Project/handlers"
-	"github.com/bnquan27/Project/middleware"
+	"github.com/bnquan27/QMQShop/backend/database"
+	"github.com/bnquan27/QMQShop/backend/handlers"
+	"github.com/bnquan27/QMQShop/backend/middleware"
 )
 
 func loadEnv(path string) {

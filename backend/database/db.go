@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bnquan27/Project/models"
+	"github.com/bnquan27/QMQShop/backend/models"
 	"github.com/lib/pq"
 )
 

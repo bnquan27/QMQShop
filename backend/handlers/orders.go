@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/bnquan27/Project/database"
-	"github.com/bnquan27/Project/middleware"
-	"github.com/bnquan27/Project/models"
+	"github.com/bnquan27/QMQShop/backend/database"
+	"github.com/bnquan27/QMQShop/backend/middleware"
+	"github.com/bnquan27/QMQShop/backend/models"
 )
 
 // POST /api/orders — place order from cart contents
