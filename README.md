@@ -110,7 +110,7 @@ Project/
 
 ## 🚀 Installation
 
-### 1️⃣ Database Setup
+### Database Setup
 
 Create the database and run the schema:
 
@@ -124,7 +124,7 @@ Make sure your PostgreSQL connection string matches the one expected by the app:
 postgres://postgres:postgres@localhost:5432/QMQSHOP?sslmode=disable
 ```
 
-### 3️⃣ Run the Server
+### Run the Server
 
 ```bash
 cd backend
