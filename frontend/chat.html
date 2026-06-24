@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+  <script>
+    document.documentElement.setAttribute(
+      "data-theme",
+      localStorage.getItem("qmq_theme") || "dark",
+    );
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat AI — QMQSHOP</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .chat-page {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 120px);
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px 24px 12px;
+      gap: 0;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 8px 0 16px;
+      scroll-behavior: smooth;
+    }
+    .chat-messages::-webkit-scrollbar { width: 6px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .chat-msg {
+      display: flex;
+      gap: 10px;
+      max-width: 85%;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .chat-msg.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+    .chat-msg.ai {
+      align-self: flex-start;
+    }
+
+    .chat-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .chat-msg.user .chat-avatar {
+      background: var(--accent);
+      color: #fff;
+    }
+    .chat-msg.ai .chat-avatar {
+      background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);
+      background-size: 200% 200%;
+      color: #fff;
+    }
+
+    .chat-bubble {
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+    .chat-msg.user .chat-bubble {
+      background: var(--accent);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .chat-msg.ai .chat-bubble {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+      color: var(--text);
+    }
+    .chat-msg.ai .chat-bubble p { margin: 0 0 8px; }
+    .chat-msg.ai .chat-bubble p:last-child { margin-bottom: 0; }
+    .chat-msg.ai .chat-bubble code {
+      background: var(--bg-secondary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    .chat-msg.ai .chat-bubble pre {
+      background: var(--bg-secondary);
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      overflow-x: auto;
+      margin: 8px 0;
+    }
+    .chat-msg.ai .chat-bubble pre code {
+      background: none;
+      padding: 0;
+    }
+    .chat-msg.ai .chat-bubble ul, .chat-msg.ai .chat-bubble ol {
+      margin: 6px 0;
+      padding-left: 20px;
+    }
+    .chat-msg.ai .chat-bubble li { margin: 2px 0; }
+
+    .chat-input-wrap {
+      display: flex;
+      gap: 8px;
+      padding: 12px 0 0;
+      border-top: 1px solid var(--border);
+    }
+    .chat-input {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      resize: none;
+      max-height: 120px;
+      font-family: inherit;
+    }
+    .chat-input:focus { border-color: var(--accent); }
+    .chat-input::placeholder { color: var(--text-muted); }
+
+    .chat-send {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: opacity 0.2s;
+    }
+    .chat-send:disabled { opacity: 0.5; cursor: not-allowed; }
+    .chat-send:not(:disabled):hover { opacity: 0.85; }
+
+    .chat-welcome {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .chat-welcome-icon {
+      font-size: 56px;
+      opacity: 0.3;
+    }
+    .chat-welcome h2 {
+      color: var(--text);
+      font-size: 20px;
+      margin: 0;
+    }
+    .chat-welcome p {
+      font-size: 14px;
+      margin: 0;
+      max-width: 400px;
+      line-height: 1.6;
+    }
+
+    .chat-typing {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 0;
+    }
+    .chat-typing span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      animation: typing 1.4s infinite ease-in-out;
+    }
+    .chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+    .chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    @media (max-width: 600px) {
+      .chat-page { padding: 12px 12px 8px; height: calc(100vh - 110px); }
+      .chat-msg { max-width: 92%; }
+      .chat-bubble { font-size: 13px; padding: 10px 12px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="main-header">
+    <div class="header-inner">
+      <button class="hamburger" onclick="document.querySelector('.category-nav').classList.toggle('show')">
+        <span></span><span></span><span></span>
+      </button>
+      <a href="/" class="logo">
+        <img src="../assets/logo.png" alt="" class="logo-img" />
+        <div class="logo-text">
+          <span class="logo-brand">QMQ<span>SHOP</span></span>
+          <span class="logo-sub">SINCE 2026</span>
+        </div>
+      </a>
+      <div class="header-tools" id="auth-header-section"></div>
+    </div>
+  </header>
+
+  <nav class="category-nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-item"><i class="fa-solid fa-house"></i> Trang chủ</a>
+      <a href="/products.html?category=1" class="nav-item"><i class="fa-solid fa-laptop"></i> Laptop Gaming</a>
+      <a href="/products.html?category=2" class="nav-item"><i class="fa-solid fa-gamepad"></i> PC Gaming</a>
+      <a href="/products.html?category=3" class="nav-item"><i class="fa-solid fa-briefcase"></i> PC Văn Phòng</a>
+      <a href="/products.html?category=4" class="nav-item"><i class="fa-solid fa-microchip"></i> Linh Kiện</a>
+      <a href="/build.html" class="nav-item"><i class="fa-solid fa-microchip"></i> Xây dựng PC</a>
+    </div>
+  </nav>
+
+  <div class="chat-page">
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-welcome" id="chat-welcome">
+        <div class="chat-welcome-icon"><i class="fa-solid fa-robot"></i></div>
+        <h2>Chào bạn! Tôi là trợ lý AI của QMQSHOP</h2>
+        <p>
+          Tôi có thể giúp bạn tư vấn về các sản phẩm laptop, PC gaming,
+          linh kiện máy tính, hoặc trả lời các câu hỏi liên quan đến công nghệ.
+        </p>
+      </div>
+    </div>
+
+    <div class="chat-input-wrap">
+      <textarea class="chat-input" id="chat-input" placeholder="Nhập tin nhắn..." rows="1"
+        oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"></textarea>
+      <button class="chat-send" id="chat-send" onclick="sendMessage()">
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    let chatHistory = [];
+    let isSending = false;
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    function scrollToBottom() {
+      const container = document.getElementById('chat-messages');
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function renderMarkdown(text) {
+      let html = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      // Code blocks first
+      html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+
+      // Inline code
+      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+      // Bold
+      html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+      // Italic
+      html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+      // Links
+      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+      html = html.replace(/(?<!<a[^>]*>)(https?:\/\/[^\s<]+)(?![^<]*<\/a>)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+
+      // Line breaks (paragraphs)
+      const paragraphs = html.split(/\n\n+/);
+      if (paragraphs.length > 1) {
+        html = paragraphs.map(p => {
+          const trimmed = p.trim();
+          if (!trimmed) return '';
+          if (trimmed.startsWith('<pre>') || trimmed.startsWith('<ul>') || trimmed.startsWith('<ol>')) return trimmed;
+          // Lists
+          if (/^(\s*[-*]\s|^\s*\d+\.\s)/m.test(trimmed)) {
+            const lines = trimmed.split('\n');
+            let inList = false, result = '';
+            for (const line of lines) {
+              const ulMatch = line.match(/^(\s*)[-*]\s+(.*)/);
+              const olMatch = line.match(/^(\s*)\d+\.\s+(.*)/);
+              if (ulMatch) {
+                if (!inList) { result += '<ul>'; inList = 'ul'; }
+                result += '<li>' + ulMatch[2] + '</li>';
+              } else if (olMatch) {
+                if (inList !== 'ol') { if (inList) result += '</' + inList + '>'; result += '<ol>'; inList = 'ol'; }
+                result += '<li>' + olMatch[2] + '</li>';
+              } else {
+                if (inList) { result += '</' + inList + '>'; inList = false; }
+                result += line + '\n';
+              }
+            }
+            if (inList) result += '</' + inList + '>';
+            return result;
+          }
+          // Single line breaks within a paragraph
+          return '<p>' + trimmed.replace(/\n/g, '<br/>') + '</p>';
+        }).join('');
+      } else {
+        // Single paragraph: just handle line breaks
+        html = '<p>' + html.trim().replace(/\n/g, '<br/>') + '</p>';
+      }
+
+      return html;
+    }
+
+    function appendMessage(role, text) {
+      const container = document.getElementById('chat-messages');
+      const welcome = document.getElementById('chat-welcome');
+      if (welcome) welcome.remove();
+
+      const div = document.createElement('div');
+      div.className = 'chat-msg ' + role;
+
+      const avatar = document.createElement('div');
+      avatar.className = 'chat-avatar';
+      avatar.innerHTML = role === 'user'
+        ? '<i class="fa-solid fa-user"></i>'
+        : '<i class="fa-solid fa-robot"></i>';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-bubble';
+      if (role === 'ai') {
+        bubble.innerHTML = renderMarkdown(text);
+      } else {
+        bubble.textContent = text;
+      }
+
+      div.appendChild(avatar);
+      div.appendChild(bubble);
+      container.appendChild(div);
+      scrollToBottom();
+    }
+
+    function showTyping() {
+      const container = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.className = 'chat-msg ai';
+      div.id = 'chat-typing-indicator';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'chat-avatar';
+      avatar.innerHTML = '<i class="fa-solid fa-robot"></i>';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-bubble';
+      bubble.innerHTML = '<div class="chat-typing"><span></span><span></span><span></span></div>';
+
+      div.appendChild(avatar);
+      div.appendChild(bubble);
+      container.appendChild(div);
+      scrollToBottom();
+    }
+
+    function hideTyping() {
+      const el = document.getElementById('chat-typing-indicator');
+      if (el) el.remove();
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const btn = document.getElementById('chat-send');
+      const text = input.value.trim();
+      if (!text || isSending) return;
+
+      input.value = '';
+      input.style.height = 'auto';
+      isSending = true;
+      btn.disabled = true;
+
+      appendMessage('user', text);
+
+      showTyping();
+
+      try {
+        const data = await API.chat(text);
+        hideTyping();
+        appendMessage('ai', data.reply);
+      } catch (e) {
+        hideTyping();
+        appendMessage('ai', '❌ ' + (e.message || 'Có lỗi xảy ra, vui lòng thử lại sau.'));
+      } finally {
+        isSending = false;
+        btn.disabled = false;
+        input.focus();
+      }
+    }
+
+    // Initial focus
+    document.addEventListener('DOMContentLoaded', () => {
+      Auth.init();
+      document.getElementById('chat-input').focus();
+    });
+  </script>
+</body>
+
+</html>

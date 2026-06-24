@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+	<script>
+		document.documentElement.setAttribute(
+			"data-theme",
+			localStorage.getItem("qmq_theme") || "dark",
+		);
+	</script>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Xây dựng PC — QMQSHOP</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+	<link rel="stylesheet" href="css/style.css" />
+	<link rel="stylesheet" href="css/build.css" />
+</head>
+
+<body>
+	<header class="main-header">
+		<div class="header-inner">
+			<button class="hamburger" onclick="
+            document.querySelector('.category-nav').classList.toggle('show')
+          ">
+				<span></span><span></span><span></span>
+			</button>
+			<a href="/" class="logo">
+				<img src="../assets/logo.png" alt="" class="logo-img" />
+				<div class="logo-text">
+					<span class="logo-brand">QMQ<span>SHOP</span></span>
+					<span class="logo-sub">SINCE 2026</span>
+				</div>
+			</a>
+			<div class="header-tools" id="auth-header-section"></div>
+		</div>
+	</header>
+
+	<nav class="category-nav">
+		<div class="nav-inner">
+			<a href="/" class="nav-item"><i class="fa-solid fa-house"></i> Trang chủ</a>
+			<a href="/products.html?category=1" class="nav-item"><i class="fa-solid fa-laptop"></i> Laptop Gaming</a>
+			<a href="/products.html?category=2" class="nav-item"><i class="fa-solid fa-gamepad"></i> PC Gaming</a>
+			<a href="/products.html?category=3" class="nav-item"><i class="fa-solid fa-briefcase"></i>PC Văn Phòng</a>
+			<a href="/products.html?category=4" class="nav-item"><i class="fa-solid fa-microchip"></i>Linh Kiện</a>
+			<a href="/build.html" class="nav-item active"><i class="fa-solid fa-microchip"></i> Xây dựng PC</a>
+		</div>
+	</nav>
+
+	<main class="pc-builder">
+		<div class="builder-header">
+			<div>
+				<h1><i class="fa-solid fa-microchip"></i> Xây dựng PC</h1>
+				<p class="builder-subtitle">
+					Tự do lựa chọn linh kiện và xây dựng cấu hình PC phù hợp với nhu cầu
+					của bạn.
+				</p>
+			</div>
+			<div class="builder-actions">
+				<button class="btn-outline btn-sm" onclick="clearBuild()">
+					<i class="fa-solid fa-trash-can"></i> Xoá cấu hình
+				</button>
+			</div>
+		</div>
+
+		<div class="builder-summary" id="builder-summary">
+			<div class="builder-summary-inner">
+				<span class="builder-summary-count" id="summary-count">0 linh kiện</span>
+				<span class="builder-summary-total" id="summary-total">0₫</span>
+				<div class="builder-summary-actions">
+					<button class="btn-primary btn-sm" id="summary-add-cart" onclick="addBuildToCart()" style="display: none">
+						<i class="fa-solid fa-cart-shopping"></i> Thêm vào giỏ
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="builder-layout">
+			<div class="builder-main" id="component-sections">
+				<div class="loading-center" style="grid-column: 1/-1">
+					<div class="spinner"></div>
+					<span>Đang tải linh kiện...</span>
+				</div>
+			</div>
+		</div>
+
+		<div style="display: flex; justify-content: center; margin-top: 24px">
+			<button class="btn-primary" style="padding: 12px 32px; font-size: 15px" onclick="addBuildToCartWithCheck()">
+				<i class="fa-solid fa-cart-shopping"></i> Thêm vào giỏ hàng
+			</button>
+		</div>
+	</main>
+
+	<div class="danger-popup-overlay" id="danger-popup" style="display: none">
+		<div class="danger-popup">
+			<div class="danger-popup-icon">
+				<i class="fa-solid fa-triangle-exclamation"></i>
+			</div>
+			<div class="danger-popup-title" id="danger-popup-title"></div>
+			<div class="danger-popup-message" id="danger-popup-message"></div>
+			<div class="danger-popup-actions" id="danger-popup-actions"></div>
+		</div>
+	</div>
+
+	<div class="component-popup-overlay" id="component-popup" style="display: none">
+		<div class="component-popup">
+			<div class="popup-header">
+				<h2 class="popup-title" id="popup-title">Chọn CPU</h2>
+				<button class="popup-close" onclick="closeComponentPopup()">
+					<i class="fa-solid fa-xmark"></i>
+				</button>
+			</div>
+			<div class="popup-body">
+				<div class="popup-filters" id="popup-filters"></div>
+				<div class="popup-content">
+					<div class="popup-toolbar">
+						<select class="popup-sort" id="popup-sort" onchange="applyPopupFilters()">
+							<option value="newest">Mới nhất</option>
+							<option value="price-asc">Giá tăng dần</option>
+							<option value="price-desc">Giá giảm dần</option>
+						</select>
+						<label class="popup-stock-toggle"><input type="checkbox" id="popup-stock-only"
+								onchange="applyPopupFilters()" />
+							Còn hàng</label>
+						<button class="btn-ghost btn-sm" onclick="clearPopupFilters()">
+							<i class="fa-solid fa-rotate-left"></i> Xóa bộ lọc
+						</button>
+						<div class="popup-pagination" id="popup-pagination"></div>
+					</div>
+					<div class="popup-products" id="popup-products"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<footer class="main-footer">
+		<div class="container">
+			<div class="footer-grid">
+				<div class="footer-brand">
+					<div class="logo-text" style="margin-bottom: 12px">
+						<span class="logo-brand">QMQ<span>SHOP</span></span>
+						<span class="logo-sub">SINCE 2026</span>
+					</div>
+					<p>QMQSHOP - Laptop, PC Gaming & Linh Kiện Chính Hãng.</p>
+				</div>
+				<div class="footer-col">
+					<h5>Danh mục</h5>
+					<a href="/products.html?category=1">Laptop Gaming</a>
+					<a href="/products.html?category=2">PC Gaming</a>
+					<a href="/products.html?category=3">PC Văn Phòng</a>
+					<a href="/products.html?category=4">Linh Kiện</a>
+				</div>
+				<div class="footer-col">
+					<h5>Liên hệ</h5>
+					<a href="#">1900.xxxx</a>
+					<a href="#">info@qmqshop.com</a>
+				</div>
+			</div>
+			<div class="footer-bottom">
+				<span>&copy; 2026 QMQSHOP</span>
+			</div>
+		</div>
+	</footer>
+
+	<script src="js/api.js?v=2"></script>
+	<script src="js/auth.js?v=2"></script>
+	<script src="js/cart.js?v=2"></script>
+	<script src="js/build.js?v=2"></script>
+</body>
+
+</html>

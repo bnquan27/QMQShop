@@ -41,16 +41,41 @@
           <div class="stat-value" id="stat-orders">—</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Doanh thu</div>
-          <div class="stat-value" id="stat-revenue">—</div>
-        </div>
-        <div class="stat-card">
           <div class="stat-label">Sản phẩm tồn kho</div>
           <div class="stat-value" id="stat-lowstock">—</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-label">Đang chờ xác nhận</div>
+          <div class="stat-value" id="stat-pending">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Đã hoàn thành</div>
+          <div class="stat-value" id="stat-delivered">—</div>
+        </div>
       </div>
 
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <!-- ============================================================
+           Revenue Chart
+           ============================================================ -->
+      <div class="revenue-chart-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+          <h2 style="font-size:20px;letter-spacing:1px;margin:0;">DOANH THU</h2>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-outline btn-sm" id="revenue-mode-btn" onclick="toggleRevenueMode()">
+              <i class="fa-solid fa-calendar-week"></i> 30 ngày
+            </button>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="revenue-chart" height="220"></canvas>
+        </div>
+        <div class="revenue-total-bar">
+          <span class="revenue-total-label">Tổng doanh thu:</span>
+          <span class="revenue-total-value" id="revenue-total-value"></span>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;margin-top:32px;">
         <h2 style="font-size:20px;letter-spacing:1px;">ĐƠN HÀNG GẦN ĐÂY</h2>
         <a href="/admin/orders.html" class="btn-outline btn-sm">Xem tất cả <i class="fa-solid fa-arrow-right"></i></a>
       </div>
@@ -71,10 +96,13 @@
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script src="../js/api.js"></script>
   <script src="../js/auth.js"></script>
   <script src="../js/cart.js"></script>
   <script>
+    let chartMode = '30d'; // '30d' or 'today'
+
     const statusLabels = {
       pending: 'Chờ xác nhận', confirmed: 'Đã xác nhận',
       shipping: 'Đang giao', delivered: 'Đã giao', cancelled: 'Đã hủy'
@@ -87,17 +115,21 @@
           API.adminGetOrders()
         ]);
 
+        window._allOrders = orders;
         const totalProducts = products.length;
         const totalOrders = orders.length;
         const totalRevenue = orders
           .filter(o => o.status !== 'cancelled')
           .reduce((s, o) => s + Number(o.total_amount), 0);
-        const lowStock = products.filter(p => p.stock > 0 && p.stock <= 5).length;
+        const lowStock = products.reduce((s, p) => s + p.stock, 0);
+        const pendingOrders = orders.filter(o => o.status === 'pending').length;
+        const deliveredOrders = orders.filter(o => o.status === 'delivered').length;
 
         document.getElementById('stat-products').textContent = totalProducts;
         document.getElementById('stat-orders').textContent = totalOrders;
-        document.getElementById('stat-revenue').textContent = formatPrice(totalRevenue);
         document.getElementById('stat-lowstock').textContent = lowStock;
+        document.getElementById('stat-pending').textContent = pendingOrders;
+        document.getElementById('stat-delivered').textContent = deliveredOrders;
 
         const tbody = document.getElementById('recent-orders-body');
         if (orders.length === 0) {
@@ -114,9 +146,145 @@
             <td style="color:var(--text-muted);font-size:13px;">${new Date(o.created_at).toLocaleDateString('vi-VN')}</td>
           </tr>
         `).join('');
+
+        drawRevenueChart(orders);
       } catch (err) {
         document.getElementById('stats-grid').innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);">Lỗi: ${err.message}</div>`;
       }
+    }
+
+    // ============================================================
+    // Revenue chart (Chart.js)
+    // ============================================================
+    let revenueChartInstance = null;
+
+    function getCssColor(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function drawRevenueChart(orders) {
+      if (revenueChartInstance) {
+        revenueChartInstance.destroy();
+        revenueChartInstance = null;
+      }
+
+      const isToday = chartMode === 'today';
+      const now = new Date();
+      const activeOrders = orders.filter(o => o.status !== 'cancelled');
+
+      // Build buckets
+      let labels, values;
+      if (isToday) {
+        const buckets = Array.from({length: 24}, (_, h) => {
+          const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h);
+          return {label: String(h).padStart(2,'0') + ':00', start, end: new Date(start.getTime() + 3600000), revenue: 0};
+        });
+        for (const o of activeOrders) {
+          const t = new Date(o.created_at);
+          for (const b of buckets) {
+            if (t >= b.start && t < b.end) { b.revenue += Number(o.total_amount); break; }
+          }
+        }
+        labels = buckets.map(b => b.label);
+        values = buckets.map(b => b.revenue);
+      } else {
+        const buckets = Array.from({length: 30}, (_, i) => {
+          const d = new Date(now);
+          d.setDate(d.getDate() - (29 - i));
+          d.setHours(0,0,0,0);
+          const end = new Date(d);
+          end.setDate(end.getDate() + 1);
+          return {label: String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0'), start: d, end, revenue: 0};
+        });
+        for (const o of activeOrders) {
+          const t = new Date(o.created_at);
+          for (const b of buckets) {
+            if (t >= b.start && t < b.end) { b.revenue += Number(o.total_amount); break; }
+          }
+        }
+        labels = buckets.map(b => b.label);
+        values = buckets.map(b => b.revenue);
+      }
+
+      // Total for current mode
+      const totalDisplay = values.reduce((s, v) => s + v, 0);
+      document.getElementById('revenue-total-value').textContent = formatPrice(totalDisplay);
+
+      // Colors
+      const accent = getCssColor('--accent') || '#f97316';
+      const border = getCssColor('--border') || '#2a2a3a';
+      const textMuted = getCssColor('--text-muted') || '#888';
+      const bgCard = getCssColor('--bg-card') || '#1a1a2e';
+
+      const canvas = document.getElementById('revenue-chart');
+      const ctx = canvas.getContext('2d');
+      const gradient = ctx.createLinearGradient(0, 0, 0, 220);
+      gradient.addColorStop(0, accent);
+      gradient.addColorStop(1, accent + '30');
+
+      revenueChartInstance = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Doanh thu',
+            data: values,
+            backgroundColor: gradient,
+            borderColor: accent,
+            borderWidth: 1,
+            borderRadius: 4,
+            borderSkipped: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => formatPrice(ctx.parsed.y)
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: {
+                color: textMuted,
+                font: { size: 10 },
+                maxRotation: 0,
+                autoSkip: false,
+                callback: function(val, idx) {
+                  const step = isToday ? 3 : 5;
+                  return idx % step === 0 || idx === labels.length - 1 ? labels[idx] : '';
+                }
+              }
+            },
+            y: {
+              beginAtZero: true,
+              border: { display: false },
+              grid: { color: border + '60' },
+              ticks: {
+                color: textMuted,
+                font: { size: 11 },
+                callback: (v) => formatPrice(v)
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function toggleRevenueMode() {
+      chartMode = chartMode === '30d' ? 'today' : '30d';
+      const btn = document.getElementById('revenue-mode-btn');
+      if (chartMode === 'today') {
+        btn.innerHTML = '<i class="fa-solid fa-calendar-day"></i> Hôm nay';
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-calendar-week"></i> 30 ngày';
+      }
+      drawRevenueChart(window._allOrders || []);
     }
 
     document.addEventListener('DOMContentLoaded', async () => {

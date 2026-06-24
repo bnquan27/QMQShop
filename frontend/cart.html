@@ -62,7 +62,7 @@
       <div class="cart-total">
         <span class="cart-total-label">Tổng cộng:</span>
         <span class="cart-total-amount" id="cart-total-price">0₫</span>
-        <a href="/checkout.html" class="btn-primary">Thanh toán <i class="fa-solid fa-arrow-right"></i></a>
+        <a href="javascript:void(0)" class="btn-primary" onclick="proceedToCheckout()">Thanh toán <i class="fa-solid fa-arrow-right"></i></a>
       </div>
     </div>
   </main>
@@ -146,6 +146,27 @@
         document.getElementById('cart-total-price').textContent = formatPrice(Cart.getTotal());
       } catch (err) {
         document.getElementById('cart-loading').innerHTML = `<span>Lỗi: ${err.message}</span>`;
+      }
+    }
+
+    async function proceedToCheckout() {
+      try {
+        const items = await Cart.load();
+        const outOfStock = items.filter(function(item) { return item.stock < 1; });
+        if (outOfStock.length > 0) {
+          const names = outOfStock.map(function(item) { return item.product_name; }).join(', ');
+          await Confirm.show({
+            title: 'Sản phẩm hết hàng',
+            message: 'Có sản phẩm đã hết hàng trong giỏ hàng: ' + names + '. Vui lòng bỏ sản phẩm này trước khi thanh toán.',
+            confirmText: 'Đã hiểu',
+            cancelText: 'Ở lại',
+            variant: 'warning',
+          });
+          return;
+        }
+        window.location.href = '/checkout.html';
+      } catch (err) {
+        Toast.error(err.message);
       }
     }
 

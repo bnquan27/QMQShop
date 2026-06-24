@@ -94,7 +94,7 @@
 
 	<script src="../js/api.js"></script>
 	<script src="../js/auth.js"></script>
-	<script src="../js/cart.js"></script>
+	<script src="../js/cart.js?v=1"></script>
 	<script>
 		let allOrders = [];
 
@@ -175,7 +175,13 @@
 		}
 
 		async function cancelOrder(id) {
-			if (!confirm("Xác nhận hủy đơn hàng này?")) return;
+			const confirmed = await Confirm.show({
+				title: "Hủy đơn hàng",
+				message: "Xác nhận hủy đơn hàng này?",
+				confirmText: "Có",
+				variant: "danger",
+			});
+			if (!confirmed) return;
 			try {
 				await API.adminUpdateOrderStatus(id, "cancelled");
 				Toast.success("Đã hủy đơn hàng");

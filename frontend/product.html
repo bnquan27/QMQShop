@@ -106,6 +106,29 @@
 			<span id="error-message">Không tìm thấy sản phẩm</span>
 			<a href="/products.html" class="btn-outline mt-16">Quay lại cửa hàng</a>
 		</div>
+
+		<!-- ============================================================
+		     RELATED PRODUCTS — Swiper
+		     ============================================================ -->
+		<section class="related-products-section" id="related-section" style="display: none">
+			<div class="section-title">
+				<h2><i class="fa-solid fa-link"></i> Sản phẩm liên quan</h2>
+			</div>
+			<div class="featured-swiper-wrap">
+				<button class="swiper-btn swiper-btn-prev" onclick="scrollRelatedSwiper(-1)" aria-label="Trước">
+					<i class="fa-solid fa-chevron-left"></i>
+				</button>
+				<div class="featured-swiper" id="related-swiper">
+					<div class="loading-center">
+						<div class="spinner"></div>
+						<span>Đang tải...</span>
+					</div>
+				</div>
+				<button class="swiper-btn swiper-btn-next" onclick="scrollRelatedSwiper(1)" aria-label="Tiếp theo">
+					<i class="fa-solid fa-chevron-right"></i>
+				</button>
+			</div>
+		</section>
 	</main>
 
 	<footer class="main-footer">
@@ -168,11 +191,11 @@
 			document.getElementById("product-image").src = img;
 			document.getElementById("product-image").alt = p.name;
 
-			if (p.specs && p.specs.CPU) {
+			if (p.cpu) {
 				document.getElementById("product-meta").textContent =
-					p.specs.CPU +
-					(p.specs.GPU ? " | " + p.specs.GPU : "") +
-					(p.specs.RAM ? " | " + p.specs.RAM : "");
+					p.cpu +
+					(p.gpu ? " | " + p.gpu : "") +
+					(p.ram ? " | " + p.ram : "");
 			}
 
 			document.getElementById("product-price").textContent = formatPrice(
@@ -191,8 +214,23 @@
 
 			// Specs table
 			const specsTable = document.getElementById("specs-table");
-			if (p.specs && Object.keys(p.specs).length > 0) {
-				specsTable.innerHTML = Object.entries(p.specs)
+			const specEntries = [
+				["CPU", p.cpu],
+				["RAM", p.ram],
+				["GPU", p.gpu],
+				["Ổ cứng", p.disk]
+			].filter(([k, v]) => v);
+			// Append entries from the JSONB specs object (skip keys already covered)
+			if (p.specs && typeof p.specs === 'object') {
+				const coveredKeys = ['cpu','ram','gpu','disk','CPU','RAM','GPU','SSD'];
+				for (const [k, v] of Object.entries(p.specs)) {
+					if (!coveredKeys.includes(k) && !specEntries.some(([sk]) => sk === k)) {
+						specEntries.push([k, v]);
+					}
+				}
+			}
+			if (specEntries.length > 0) {
+				specsTable.innerHTML = specEntries
 					.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`)
 					.join("");
 			} else {
@@ -222,6 +260,9 @@
 				bc.href = "/products.html?category=" + p.category_id;
 				bc.textContent = p.category_name;
 			}
+
+			// Related products
+			loadRelatedProducts(p);
 		}
 
 		function showError(msg) {
@@ -241,6 +282,72 @@
 			await Compare.open(window._currentProduct.id);
 		}
 
+		// ============================================================
+		// Related Products
+		// ============================================================
+		function renderProductCard(p) {
+			const img = p.images && p.images[0] ? p.images[0] : "";
+			const discount =
+				p.old_price && p.old_price > p.price
+					? Math.round((1 - p.price / p.old_price) * 100)
+					: 0;
+			const oos = p.stock < 1;
+			return `
+				<div class="product-card">
+					${oos ? '<span class="badge badge-gray">Hết hàng</span>' : discount > 0 ? '<span class="badge badge-red">-' + discount + '%</span>' : ""}
+					<a href="/product.html?id=${p.id}" class="product-img-wrap">
+						<img src="${img}" alt="${p.name.replace(/"/g, '&quot;')}" loading="lazy" />
+					</a>
+					<a href="/product.html?id=${p.id}" class="product-name">${p.name}</a>
+					<div class="product-specs">
+						${p.cpu || ""}
+						${p.gpu ? " | " + p.gpu : ""}
+						${p.ram ? " | " + p.ram : ""}
+					</div>
+					<div class="product-price-row">
+						<span class="price-current">${formatPrice(p.price)}</span>
+						${p.old_price ? '<span class="price-old">' + formatPrice(p.old_price) + '</span>' : ""}
+					</div>
+					${oos ? '<button class="btn-add-cart" disabled style="opacity:0.4;cursor:not-allowed;">Hết hàng</button>' : '<button class="btn-add-cart" onclick="event.preventDefault(); Cart.add(' + p.id + ')"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>'}
+				</div>
+			`;
+		}
+
+		async function loadRelatedProducts(p) {
+			const section = document.getElementById("related-section");
+			const swiper = document.getElementById("related-swiper");
+			try {
+				let params = {limit: 10};
+				if (p.component_type) {
+					params.component_type = p.component_type;
+				} else if (p.category_id) {
+					params.category = p.category_id;
+				} else {
+					section.style.display = "none";
+					return;
+				}
+				const data = await API.getProducts(params);
+				const items = data.products || data;
+				const filtered = items.filter(function(r) { return r.id !== p.id; });
+				if (filtered.length === 0) {
+					section.style.display = "none";
+					return;
+				}
+				swiper.innerHTML = filtered.map(renderProductCard).join("");
+				section.style.display = "";
+			} catch (err) {
+				section.style.display = "none";
+			}
+		}
+
+		function scrollRelatedSwiper(dir) {
+			const container = document.getElementById("related-swiper");
+			const card = container.querySelector(".product-card");
+			if (!card) return;
+			const cardWidth = card.offsetWidth + 16;
+			container.scrollBy({left: cardWidth * 2 * dir, behavior: "smooth"});
+		}
+
 		document.addEventListener("DOMContentLoaded", async () => {
 			await Auth.init();
 			Auth.updateHeader();
@@ -249,6 +356,7 @@
 			await loadProduct();
 		});
 	</script>
+	<script src="js/chatbox.js"></script>
 </body>
 
 </html>

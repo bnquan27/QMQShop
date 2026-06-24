@@ -20,7 +20,33 @@ func GetCategories(w http.ResponseWriter, r *http.Request) {
 	middleware.JSON(w, http.StatusOK, cats)
 }
 
-// GET /api/products?search=&category=&sort=&page=&limit=
+func parseCSV(s string) []string {
+	if s == "" {
+		return nil
+	}
+	parts := strings.Split(s, ",")
+	result := make([]string, 0, len(parts))
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			result = append(result, p)
+		}
+	}
+	return result
+}
+
+func parseInt64s(vals []string) []int64 {
+	result := make([]int64, 0, len(vals))
+	for _, v := range vals {
+		v = strings.TrimSpace(v)
+		if n, err := strconv.ParseInt(v, 10, 64); err == nil && n >= 0 {
+			result = append(result, n)
+		}
+	}
+	return result
+}
+
+// GET /api/products?search=&category=&sort=&page=&limit=&brand=&cpu=&ram=&gpu=&disk=&min_price=&max_price=
 // GET /api/products/featured
 func GetProducts(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
@@ -37,10 +63,18 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filter := database.ProductFilter{
-		Search: q.Get("search"),
-		Sort:   q.Get("sort"),
-		Page:   1,
-		Limit:  20,
+		Search:         q.Get("search"),
+		Sort:           q.Get("sort"),
+		Page:           1,
+		Limit:          20,
+		Brands:         parseCSV(q.Get("brand")),
+		CPUs:           parseCSV(q.Get("cpu")),
+		RAMs:           parseCSV(q.Get("ram")),
+		GPUs:           parseCSV(q.Get("gpu")),
+		Disks:          parseCSV(q.Get("disk")),
+		ComponentTypes: parseCSV(q.Get("component_type")),
+		MinPrices:      parseInt64s(q["min_price"]),
+		MaxPrices:      parseInt64s(q["max_price"]),
 	}
 
 	if p, err := strconv.Atoi(q.Get("page")); err == nil && p > 0 {
@@ -84,4 +118,53 @@ func GetProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	middleware.JSON(w, http.StatusOK, product)
+}
+
+// GET /api/products/filters?category=
+func GetFilterValues(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	var catID *int
+	if v := q.Get("category"); v != "" {
+		if cid, err := strconv.Atoi(v); err == nil {
+			catID = &cid
+		}
+	}
+	opts, err := database.GetProductFilterValues(catID)
+	if err != nil {
+		middleware.JSON(w, http.StatusInternalServerError, models.ErrorResponse{Error: "Lỗi tải bộ lọc"})
+		return
+	}
+	middleware.JSON(w, http.StatusOK, opts)
+}
+
+// GET /api/pc-builder/components — all buildable component groups
+func GetPCBuilderComponents(w http.ResponseWriter, r *http.Request) {
+	groups, err := database.GetComponentTypes()
+	if err != nil {
+		middleware.JSON(w, http.StatusInternalServerError, models.ErrorResponse{Error: "Lỗi tải linh kiện"})
+		return
+	}
+	middleware.JSON(w, http.StatusOK, groups)
+}
+
+// GET /api/pc-builder/components/{type} — components of a specific type
+func GetComponentsByType(w http.ResponseWriter, r *http.Request) {
+	ct := r.PathValue("type")
+	valid := false
+	for _, t := range models.ComponentTypes {
+		if t == ct {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		middleware.JSON(w, http.StatusBadRequest, models.ErrorResponse{Error: "Loại linh kiện không hợp lệ"})
+		return
+	}
+	products, err := database.GetComponentsByType(ct)
+	if err != nil {
+		middleware.JSON(w, http.StatusInternalServerError, models.ErrorResponse{Error: "Lỗi tải linh kiện"})
+		return
+	}
+	middleware.JSON(w, http.StatusOK, products)
 }

@@ -23,7 +23,62 @@ func InitDB(connStr string) error {
 	DB.SetMaxOpenConns(25)
 	DB.SetMaxIdleConns(5)
 	DB.SetConnMaxLifetime(5 * time.Minute)
+
+	// Migration: add brand column
+	DB.Exec(`ALTER TABLE products ADD COLUMN IF NOT EXISTS brand TEXT NOT NULL DEFAULT ''`)
+	DB.Exec(`UPDATE products SET brand = CASE
+		WHEN name ILIKE 'Laptop %' THEN SPLIT_PART(SUBSTRING(name FROM 8), ' ', 1)
+		WHEN name ILIKE 'PC Gaming %' THEN SPLIT_PART(SUBSTRING(name FROM 11), ' ', 1)
+		WHEN name ILIKE 'PC Văn Phòng %' THEN SPLIT_PART(SUBSTRING(name FROM 14), ' ', 1)
+		WHEN name ILIKE 'PC %' THEN SPLIT_PART(SUBSTRING(name FROM 4), ' ', 1)
+		ELSE SPLIT_PART(name, ' ', 1)
+	END WHERE brand = ''`)
+
+	// Migration: add cpu, ram, gpu, disk columns
+	DB.Exec(`ALTER TABLE products ADD COLUMN IF NOT EXISTS cpu TEXT NOT NULL DEFAULT ''`)
+	DB.Exec(`ALTER TABLE products ADD COLUMN IF NOT EXISTS ram TEXT NOT NULL DEFAULT ''`)
+	DB.Exec(`ALTER TABLE products ADD COLUMN IF NOT EXISTS gpu TEXT NOT NULL DEFAULT ''`)
+	DB.Exec(`ALTER TABLE products ADD COLUMN IF NOT EXISTS disk TEXT NOT NULL DEFAULT ''`)
+	DB.Exec(`UPDATE products SET cpu = specs->>'CPU' WHERE specs ? 'CPU'`)
+	DB.Exec(`UPDATE products SET ram = specs->>'RAM' WHERE specs ? 'RAM'`)
+	DB.Exec(`UPDATE products SET gpu = specs->>'GPU' WHERE specs ? 'GPU'`)
+	DB.Exec(`UPDATE products SET disk = specs->>'SSD' WHERE specs ? 'SSD'`)
+
+	// Migration: add component_type column for PC Builder
+	DB.Exec(`ALTER TABLE products ADD COLUMN IF NOT EXISTS component_type TEXT NOT NULL DEFAULT ''`)
+
+	// Migration: filter_options table
+	DB.Exec(`CREATE TABLE IF NOT EXISTS filter_options (
+		id SERIAL PRIMARY KEY,
+		type TEXT NOT NULL,
+		value TEXT NOT NULL,
+		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		UNIQUE(type, value)
+	)`)
+
+	// Migration: convert TIMESTAMP (without tz) → TIMESTAMPTZ for timezone correctness
+	migrateTimestamptz("orders", "created_at")
+	migrateTimestamptz("users", "created_at")
+	migrateTimestamptz("sessions", "created_at")
+	migrateTimestamptz("products", "created_at")
+	migrateTimestamptz("products", "updated_at")
+
 	return DB.Ping()
+}
+
+func migrateTimestamptz(table, column string) {
+	var dataType string
+	err := DB.QueryRow(
+		`SELECT data_type FROM information_schema.columns
+		 WHERE table_name=$1 AND column_name=$2`, table, column,
+	).Scan(&dataType)
+	if err != nil || dataType != "timestamp without time zone" {
+		return
+	}
+	DB.Exec(fmt.Sprintf(
+		`ALTER TABLE %s ALTER COLUMN %s TYPE TIMESTAMPTZ USING %s AT TIME ZONE 'Asia/Ho_Chi_Minh'`,
+		table, column, column,
+	))
 }
 
 // ============================================================
@@ -145,12 +200,20 @@ func GetCategories() ([]models.Category, error) {
 // ============================================================
 
 type ProductFilter struct {
-	CategoryID *int
-	Search     string
-	Sort       string // "price_asc", "price_desc", "newest", "name"
-	Page       int
-	Limit      int
-	Featured   bool
+	CategoryID    *int
+	Search        string
+	Sort          string // "price_asc", "price_desc", "newest", "name"
+	Page          int
+	Limit         int
+	Featured      bool
+	MinPrices     []int64
+	MaxPrices     []int64
+	Brands        []string
+	CPUs          []string
+	RAMs          []string
+	GPUs          []string
+	Disks         []string
+	ComponentTypes []string
 }
 
 type ProductListResult struct {
@@ -168,10 +231,11 @@ func scanProduct(scanner interface {
 	var categoryID sql.NullInt64
 
 	err := scanner.Scan(
-		&p.ID, &categoryID, &p.Name, &p.Slug, &p.Description,
+		&p.ID, &categoryID, &p.Brand, &p.Name, &p.Slug, &p.Description,
 		&specsJSON, &p.Price, &oldPrice, pq.Array(&p.Images),
-		&p.Stock, &p.Featured, &p.CreatedAt, &p.UpdatedAt,
+		&p.Stock, &p.Featured, &p.Hidden, &p.CreatedAt, &p.UpdatedAt,
 		&p.CategoryName,
+		&p.CPU, &p.RAM, &p.GPU, &p.Disk, &p.ComponentType,
 	)
 	if err != nil {
 		return err
@@ -191,10 +255,49 @@ func scanProduct(scanner interface {
 	if p.Specs == nil {
 		p.Specs = map[string]string{}
 	}
+	// Populate Specs map from columns for backward compatibility
+	if p.CPU != "" {
+		p.Specs["CPU"] = p.CPU
+	}
+	if p.RAM != "" {
+		p.Specs["RAM"] = p.RAM
+	}
+	if p.GPU != "" {
+		p.Specs["GPU"] = p.GPU
+	}
+	if p.Disk != "" {
+		p.Specs["SSD"] = p.Disk
+	}
 	if p.Images == nil {
 		p.Images = []string{}
 	}
 	return nil
+}
+
+func buildINClause(column string, values []string, args *[]interface{}, argIdx *int) string {
+	if len(values) == 0 {
+		return ""
+	}
+	placeholders := make([]string, len(values))
+	for i, v := range values {
+		placeholders[i] = fmt.Sprintf("$%d", *argIdx)
+		*args = append(*args, v)
+		*argIdx++
+	}
+	return fmt.Sprintf("%s IN (%s)", column, strings.Join(placeholders, ","))
+}
+
+func buildSpecINClause(column string, values []string, args *[]interface{}, argIdx *int) string {
+	if len(values) == 0 {
+		return ""
+	}
+	clauses := make([]string, len(values))
+	for i, v := range values {
+		clauses[i] = fmt.Sprintf("p.%s = $%d::text", column, *argIdx)
+		*args = append(*args, v)
+		*argIdx++
+	}
+	return "(" + strings.Join(clauses, " OR ") + ")"
 }
 
 func GetProducts(filter ProductFilter) (*ProductListResult, error) {
@@ -211,16 +314,66 @@ func GetProducts(filter ProductFilter) (*ProductListResult, error) {
 		argIdx++
 	}
 	if filter.Search != "" {
-		where = append(where, fmt.Sprintf("to_tsvector('simple', name) @@ plainto_tsquery('simple', $%d)", argIdx))
+		where = append(where, fmt.Sprintf("to_tsvector('simple', p.name) @@ plainto_tsquery('simple', $%d)", argIdx))
 		args = append(args, filter.Search)
 		argIdx++
+	} else {
+		where = append(where, "hidden = FALSE")
+	}
+
+	// Price ranges — build OR clause for multiple ranges
+	if len(filter.MinPrices) > 0 || len(filter.MaxPrices) > 0 {
+		priceClauses := []string{}
+		// Pair up min/max by index
+		maxLen := len(filter.MinPrices)
+		if len(filter.MaxPrices) > maxLen {
+			maxLen = len(filter.MaxPrices)
+		}
+		for i := 0; i < maxLen; i++ {
+			parts := []string{}
+			if i < len(filter.MinPrices) {
+				parts = append(parts, fmt.Sprintf("p.price >= $%d", argIdx))
+				args = append(args, filter.MinPrices[i])
+				argIdx++
+			}
+			if i < len(filter.MaxPrices) && filter.MaxPrices[i] > 0 {
+				parts = append(parts, fmt.Sprintf("p.price <= $%d", argIdx))
+				args = append(args, filter.MaxPrices[i])
+				argIdx++
+			}
+			if len(parts) > 0 {
+				priceClauses = append(priceClauses, "("+strings.Join(parts, " AND ")+")")
+			}
+		}
+		if len(priceClauses) > 0 {
+			where = append(where, "("+strings.Join(priceClauses, " OR ")+")")
+		}
+	}
+
+	if clause := buildINClause("p.brand", filter.Brands, &args, &argIdx); clause != "" {
+		where = append(where, clause)
+	}
+	if clause := buildSpecINClause("cpu", filter.CPUs, &args, &argIdx); clause != "" {
+		where = append(where, clause)
+	}
+	if clause := buildSpecINClause("ram", filter.RAMs, &args, &argIdx); clause != "" {
+		where = append(where, clause)
+	}
+	if clause := buildSpecINClause("gpu", filter.GPUs, &args, &argIdx); clause != "" {
+		where = append(where, clause)
+	}
+	if clause := buildSpecINClause("disk", filter.Disks, &args, &argIdx); clause != "" {
+		where = append(where, clause)
+	}
+	if clause := buildINClause("p.component_type", filter.ComponentTypes, &args, &argIdx); clause != "" {
+		where = append(where, clause)
 	}
 
 	whereClause := strings.Join(where, " AND ")
 
 	// Count
 	var total int
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM products WHERE %s", whereClause)
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM products p WHERE %s", whereClause)
 	if err := DB.QueryRow(countQuery, args...).Scan(&total); err != nil {
 		return nil, err
 	}
@@ -248,10 +401,11 @@ func GetProducts(filter ProductFilter) (*ProductListResult, error) {
 	totalPages := int(math.Ceil(float64(total) / float64(filter.Limit)))
 
 	query := fmt.Sprintf(
-		`SELECT p.id, p.category_id, p.name, p.slug, p.description,
+		`SELECT p.id, p.category_id, p.brand, p.name, p.slug, p.description,
 		        p.specs, p.price, p.old_price, p.images,
-		        p.stock, p.featured, p.created_at, p.updated_at,
-		        COALESCE(c.name, '') AS category_name
+		        p.stock, p.featured, p.hidden, p.created_at, p.updated_at,
+		        COALESCE(c.name, '') AS category_name,
+		        p.cpu, p.ram, p.gpu, p.disk, p.component_type
 		 FROM products p
 		 LEFT JOIN categories c ON c.id = p.category_id
 		 WHERE %s
@@ -289,10 +443,11 @@ func GetProducts(filter ProductFilter) (*ProductListResult, error) {
 
 func GetProductByID(id int) (*models.Product, error) {
 	row := DB.QueryRow(
-		`SELECT p.id, p.category_id, p.name, p.slug, p.description,
+		`SELECT p.id, p.category_id, p.brand, p.name, p.slug, p.description,
 		        p.specs, p.price, p.old_price, p.images,
-		        p.stock, p.featured, p.created_at, p.updated_at,
-		        COALESCE(c.name, '') AS category_name
+		        p.stock, p.featured, p.hidden, p.created_at, p.updated_at,
+		        COALESCE(c.name, '') AS category_name,
+		        p.cpu, p.ram, p.gpu, p.disk, p.component_type
 		 FROM products p
 		 LEFT JOIN categories c ON c.id = p.category_id
 		 WHERE p.id = $1`, id,
@@ -309,10 +464,11 @@ func GetProductByID(id int) (*models.Product, error) {
 
 func GetProductBySlug(slug string) (*models.Product, error) {
 	row := DB.QueryRow(
-		`SELECT p.id, p.category_id, p.name, p.slug, p.description,
+		`SELECT p.id, p.category_id, p.brand, p.name, p.slug, p.description,
 		        p.specs, p.price, p.old_price, p.images,
-		        p.stock, p.featured, p.created_at, p.updated_at,
-		        COALESCE(c.name, '') AS category_name
+		        p.stock, p.featured, p.hidden, p.created_at, p.updated_at,
+		        COALESCE(c.name, '') AS category_name,
+		        p.cpu, p.ram, p.gpu, p.disk, p.component_type
 		 FROM products p
 		 LEFT JOIN categories c ON c.id = p.category_id
 		 WHERE p.slug = $1`, slug,
@@ -332,24 +488,151 @@ func GetFeaturedProducts() (*ProductListResult, error) {
 	return GetProducts(f)
 }
 
-func CreateProduct(req models.ProductCreateRequest) (*models.Product, error) {
-	if req.Specs == nil {
-		req.Specs = map[string]string{}
+type FilterOptions struct {
+	Brands []string `json:"brands"`
+	CPUs   []string `json:"cpus"`
+	RAMs   []string `json:"rams"`
+	GPUs   []string `json:"gpus"`
+	Disks  []string `json:"disks"`
+}
+
+func GetProductFilterValues(categoryID *int) (*FilterOptions, error) {
+	opts := &FilterOptions{}
+
+	baseWhere := []string{"hidden = FALSE"}
+	args := []interface{}{}
+	argIdx := 1
+
+	if categoryID != nil {
+		baseWhere = append(baseWhere, fmt.Sprintf("category_id = $%d", argIdx))
+		args = append(args, *categoryID)
+		argIdx++
 	}
+	whereClause := strings.Join(baseWhere, " AND ")
+
+	queries := []struct {
+		key  string
+		spec string
+		dest *[]string
+	}{
+		{"brand", "", &opts.Brands},
+		{"cpu", "cpu", &opts.CPUs},
+		{"ram", "ram", &opts.RAMs},
+		{"gpu", "gpu", &opts.GPUs},
+		{"disk", "disk", &opts.Disks},
+	}
+
+	for _, q := range queries {
+		var qry string
+		var qargs []interface{}
+		if q.spec != "" {
+			qry = fmt.Sprintf(
+				`SELECT DISTINCT %s FROM products p WHERE %s AND %s IS NOT NULL AND %s != '' ORDER BY 1`,
+				q.spec, whereClause, q.spec, q.spec,
+			)
+			qargs = args
+		} else {
+			qry = fmt.Sprintf(
+				`SELECT DISTINCT brand FROM products p WHERE %s AND brand != '' ORDER BY 1`,
+				whereClause,
+			)
+			qargs = args
+		}
+		rows, err := DB.Query(qry, qargs...)
+		if err != nil {
+			return nil, fmt.Errorf("filter values for %s: %w", q.key, err)
+		}
+		for rows.Next() {
+			var val string
+			if err := rows.Scan(&val); err != nil {
+				rows.Close()
+				return nil, err
+			}
+			*q.dest = append(*q.dest, val)
+		}
+		rows.Close()
+	}
+
+	// Merge admin-managed filter options only when no category filter
+	// (admin options are global, not category-specific — merging them
+	// would show brands/options that have no products in the selected category)
+	if categoryID == nil {
+		adminOpts, err := GetCustomFilterOptions()
+		if err == nil {
+			for _, o := range adminOpts {
+				switch o.Type {
+				case "brand":
+					opts.Brands = append(opts.Brands, o.Value)
+				case "cpu":
+					opts.CPUs = append(opts.CPUs, o.Value)
+				case "ram":
+					opts.RAMs = append(opts.RAMs, o.Value)
+				case "gpu":
+					opts.GPUs = append(opts.GPUs, o.Value)
+				case "disk":
+					opts.Disks = append(opts.Disks, o.Value)
+				}
+			}
+		}
+	}
+
+	// Deduplicate
+	seen := map[string]map[string]bool{
+		"brand": {}, "cpu": {}, "ram": {}, "gpu": {}, "disk": {},
+	}
+	dedupe := func(src []string, key string) []string {
+		out := make([]string, 0, len(src))
+		for _, v := range src {
+			if !seen[key][v] {
+				seen[key][v] = true
+				out = append(out, v)
+			}
+		}
+		return out
+	}
+	opts.Brands = dedupe(opts.Brands, "brand")
+	opts.CPUs = dedupe(opts.CPUs, "cpu")
+	opts.RAMs = dedupe(opts.RAMs, "ram")
+	opts.GPUs = dedupe(opts.GPUs, "gpu")
+	opts.Disks = dedupe(opts.Disks, "disk")
+
+	return opts, nil
+}
+
+func CreateProduct(req models.ProductCreateRequest) (*models.Product, error) {
 	if req.Images == nil {
 		req.Images = []string{}
 	}
-	specsJSON, _ := json.Marshal(req.Specs)
+	// Build specs JSONB: merge req.Specs with the 4 dedicated fields
+	specs := make(map[string]string)
+	for k, v := range req.Specs {
+		specs[k] = v
+	}
+	if req.CPU != "" {
+		specs["CPU"] = req.CPU
+	}
+	if req.RAM != "" {
+		specs["RAM"] = req.RAM
+	}
+	if req.GPU != "" {
+		specs["GPU"] = req.GPU
+	}
+	if req.Disk != "" {
+		specs["SSD"] = req.Disk
+	}
+	specsJSON, _ := json.Marshal(specs)
 
 	row := DB.QueryRow(
-		`INSERT INTO products (category_id, name, slug, description, specs, price, old_price, images, stock, featured)
-		 VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9, $10)
-		 RETURNING id, category_id, name, slug, description,
+		`INSERT INTO products (category_id, brand, name, slug, description, specs, price, old_price, images, stock, featured, cpu, ram, gpu, disk, component_type)
+		 VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+		 RETURNING id, category_id, brand, name, slug, description,
 		           specs, price, old_price, images,
-		           stock, featured, created_at, updated_at,
-		           '' AS category_name`,
-		req.CategoryID, req.Name, generateSlug(req.Name), req.Description,
+		           stock, featured, hidden, created_at, updated_at,
+		           '' AS category_name,
+		           cpu, ram, gpu, disk, component_type`,
+		req.CategoryID, req.Brand, req.Name, generateSlug(req.Name), req.Description,
 		string(specsJSON), req.Price, req.OldPrice, pq.Array(req.Images), req.Stock, req.Featured,
+		req.CPU, req.RAM, req.GPU, req.Disk, req.ComponentType,
 	)
 	var p models.Product
 	if err := scanProduct(row, &p); err != nil {
@@ -359,27 +642,44 @@ func CreateProduct(req models.ProductCreateRequest) (*models.Product, error) {
 }
 
 func UpdateProduct(id int, req models.ProductCreateRequest) (*models.Product, error) {
-	if req.Specs == nil {
-		req.Specs = map[string]string{}
-	}
 	if req.Images == nil {
 		req.Images = []string{}
 	}
-	specsJSON, _ := json.Marshal(req.Specs)
+	// Build specs JSONB: merge req.Specs with the 4 dedicated fields
+	specs := make(map[string]string)
+	for k, v := range req.Specs {
+		specs[k] = v
+	}
+	if req.CPU != "" {
+		specs["CPU"] = req.CPU
+	}
+	if req.RAM != "" {
+		specs["RAM"] = req.RAM
+	}
+	if req.GPU != "" {
+		specs["GPU"] = req.GPU
+	}
+	if req.Disk != "" {
+		specs["SSD"] = req.Disk
+	}
+	specsJSON, _ := json.Marshal(specs)
 
 	row := DB.QueryRow(
 		`UPDATE products SET
-			category_id = $1, name = $2, slug = $3, description = $4,
-			specs = $5::jsonb, price = $6, old_price = $7,
-			images = $8, stock = $9, featured = $10,
+			category_id = $1, brand = $2, name = $3, slug = $4, description = $5,
+			specs = $6::jsonb, price = $7, old_price = $8,
+			images = $9, stock = $10, featured = $11,
+			cpu = $12, ram = $13, gpu = $14, disk = $15, component_type = $16,
 			updated_at = NOW()
-		 WHERE id = $11
-		 RETURNING id, category_id, name, slug, description,
+		 WHERE id = $17
+		 RETURNING id, category_id, brand, name, slug, description,
 		           specs, price, old_price, images,
-		           stock, featured, created_at, updated_at,
-		           '' AS category_name`,
-		req.CategoryID, req.Name, generateSlug(req.Name), req.Description,
-		string(specsJSON), req.Price, req.OldPrice, pq.Array(req.Images), req.Stock, req.Featured, id,
+		           stock, featured, hidden, created_at, updated_at,
+		           '' AS category_name,
+		           cpu, ram, gpu, disk, component_type`,
+		req.CategoryID, req.Brand, req.Name, generateSlug(req.Name), req.Description,
+		string(specsJSON), req.Price, req.OldPrice, pq.Array(req.Images), req.Stock, req.Featured,
+		req.CPU, req.RAM, req.GPU, req.Disk, req.ComponentType, id,
 	)
 	var p models.Product
 	if err := scanProduct(row, &p); err != nil {
@@ -401,6 +701,20 @@ func DeleteProduct(id int) error {
 		return fmt.Errorf("not found")
 	}
 	return nil
+}
+
+func ToggleProductHidden(id int) (bool, error) {
+	var hidden bool
+	err := DB.QueryRow(
+		`UPDATE products SET hidden = NOT hidden, updated_at = NOW() WHERE id = $1 RETURNING hidden`, id,
+	).Scan(&hidden)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, fmt.Errorf("not found")
+		}
+		return false, err
+	}
+	return hidden, nil
 }
 
 func generateSlug(name string) string {
@@ -805,11 +1119,20 @@ func RemoveFromComparison(comparisonID, productID int) error {
 	return err
 }
 
+func ClearComparison(comparisonID int) error {
+	_, err := DB.Exec(
+		`DELETE FROM comparison_items WHERE comparison_id = $1`,
+		comparisonID,
+	)
+	return err
+}
+
 func GetComparisonProducts(comparisonID int) ([]models.ComparisonWithProduct, error) {
 	rows, err := DB.Query(
 		`SELECT ci.id, ci.comparison_id, ci.product_id,
 		        p.name, COALESCE(p.images[1], ''), p.price, p.slug, p.specs,
-		        COALESCE(p.category_id, 0), COALESCE(c.name, '')
+		        COALESCE(p.category_id, 0), COALESCE(c.name, ''),
+		        COALESCE(p.component_type, '')
 		 FROM comparison_items ci
 		 JOIN products p ON p.id = ci.product_id
 		 LEFT JOIN categories c ON c.id = p.category_id
@@ -828,6 +1151,7 @@ func GetComparisonProducts(comparisonID int) ([]models.ComparisonWithProduct, er
 			&item.ID, &item.ComparisonID, &item.ProductID,
 			&item.ProductName, &item.ProductImage, &item.ProductPrice, &item.ProductSlug, &specsJSON,
 			&item.CategoryID, &item.CategoryName,
+			&item.ComponentType,
 		); err != nil {
 			return nil, err
 		}
@@ -847,10 +1171,11 @@ func GetComparisonProducts(comparisonID int) ([]models.ComparisonWithProduct, er
 
 func GetAllProducts() ([]models.Product, error) {
 	rows, err := DB.Query(
-		`SELECT p.id, p.category_id, p.name, p.slug, p.description,
+		`SELECT p.id, p.category_id, p.brand, p.name, p.slug, p.description,
 		        p.specs, p.price, p.old_price, p.images,
-		        p.stock, p.featured, p.created_at, p.updated_at,
-		        COALESCE(c.name, '') AS category_name
+		        p.stock, p.featured, p.hidden, p.created_at, p.updated_at,
+		        COALESCE(c.name, '') AS category_name,
+		        p.cpu, p.ram, p.gpu, p.disk, p.component_type
 		 FROM products p
 		 LEFT JOIN categories c ON c.id = p.category_id
 		 ORDER BY p.created_at DESC`,
@@ -872,4 +1197,122 @@ func GetAllProducts() ([]models.Product, error) {
 		products = []models.Product{}
 	}
 	return products, rows.Err()
+}
+
+// ============================================================
+// Filter Options — admin-managed filter values
+// ============================================================
+
+func GetCustomFilterOptions() ([]models.FilterOption, error) {
+	rows, err := DB.Query(`SELECT id, type, value, created_at FROM filter_options ORDER BY type, value`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var opts []models.FilterOption
+	for rows.Next() {
+		var o models.FilterOption
+		if err := rows.Scan(&o.ID, &o.Type, &o.Value, &o.CreatedAt); err != nil {
+			return nil, err
+		}
+		opts = append(opts, o)
+	}
+	if opts == nil {
+		opts = []models.FilterOption{}
+	}
+	return opts, rows.Err()
+}
+
+func CreateFilterOption(typeVal, value string) (*models.FilterOption, error) {
+	o := &models.FilterOption{}
+	err := DB.QueryRow(
+		`INSERT INTO filter_options (type, value) VALUES ($1, $2)
+		 RETURNING id, type, value, created_at`,
+		typeVal, value,
+	).Scan(&o.ID, &o.Type, &o.Value, &o.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return o, nil
+}
+
+func DeleteFilterOption(id int) error {
+	result, err := DB.Exec(`DELETE FROM filter_options WHERE id = $1`, id)
+	if err != nil {
+		return err
+	}
+	n, _ := result.RowsAffected()
+	if n == 0 {
+		return fmt.Errorf("not found")
+	}
+	return nil
+}
+
+func UpdateFilterOption(id int, typeVal, value string) (*models.FilterOption, error) {
+	o := &models.FilterOption{}
+	err := DB.QueryRow(
+		`UPDATE filter_options SET type=$1, value=$2 WHERE id=$3
+		 RETURNING id, type, value, created_at`,
+		typeVal, value, id,
+	).Scan(&o.ID, &o.Type, &o.Value, &o.CreatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("not found")
+		}
+		return nil, err
+	}
+	return o, nil
+}
+
+// ============================================================
+// PC Builder
+// ============================================================
+
+func GetComponentsByType(componentType string) ([]models.Product, error) {
+	rows, err := DB.Query(
+		`SELECT p.id, p.category_id, p.brand, p.name, p.slug, p.description,
+		        p.specs, p.price, p.old_price, p.images,
+		        p.stock, p.featured, p.hidden, p.created_at, p.updated_at,
+		        COALESCE(c.name, '') AS category_name,
+		        p.cpu, p.ram, p.gpu, p.disk, p.component_type
+		 FROM products p
+		 LEFT JOIN categories c ON c.id = p.category_id
+		 WHERE p.component_type = $1 AND p.hidden = FALSE
+		 ORDER BY p.price ASC`, componentType,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var products []models.Product
+	for rows.Next() {
+		var p models.Product
+		if err := scanProduct(rows, &p); err != nil {
+			return nil, err
+		}
+		products = append(products, p)
+	}
+	if products == nil {
+		products = []models.Product{}
+	}
+	return products, rows.Err()
+}
+
+func GetComponentTypes() ([]models.ComponentGroup, error) {
+	types := models.ComponentTypes
+	var groups []models.ComponentGroup
+	for _, ct := range types {
+		products, err := GetComponentsByType(ct)
+		if err != nil {
+			return nil, err
+		}
+		groups = append(groups, models.ComponentGroup{
+			Type:     ct,
+			Label:    models.ComponentTypeLabels[ct],
+			Products: products,
+		})
+	}
+	return groups, nil
 }

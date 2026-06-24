@@ -44,6 +44,13 @@ func main() {
 	if dbURL == "" {
 		dbURL = "postgres://postgres:postgres@localhost:5432/QMQSHOP?sslmode=disable"
 	}
+	if !strings.Contains(dbURL, "timezone=") {
+		if strings.Contains(dbURL, "?") {
+			dbURL += "&timezone=Asia%2FHo_Chi_Minh"
+		} else {
+			dbURL += "?timezone=Asia%2FHo_Chi_Minh"
+		}
+	}
 	if err := database.InitDB(dbURL); err != nil {
 		log.Fatalf("Database connection failed: %v", err)
 	}
@@ -63,9 +70,16 @@ func main() {
 	// Product & category endpoints (public)
 	// ============================================================
 	mux.HandleFunc("GET /api/categories", handlers.GetCategories)
+	mux.HandleFunc("GET /api/products/filters", handlers.GetFilterValues)
 	mux.HandleFunc("GET /api/products/featured", handlers.GetProducts)
 	mux.HandleFunc("GET /api/products/{id}", handlers.GetProduct)
 	mux.HandleFunc("GET /api/products", handlers.GetProducts)
+
+	// ============================================================
+	// PC Builder endpoints (public)
+	// ============================================================
+	mux.HandleFunc("GET /api/pc-builder/components", handlers.GetPCBuilderComponents)
+	mux.HandleFunc("GET /api/pc-builder/components/{type}", handlers.GetComponentsByType)
 
 	// ============================================================
 	// Cart endpoints (require auth)
@@ -90,10 +104,16 @@ func main() {
 	mux.HandleFunc("PUT /api/user/password", middleware.RequireAuth(handlers.ChangePassword))
 
 	// ============================================================
+	// AI Chat endpoint
+	// ============================================================
+	mux.HandleFunc("POST /api/chat", handlers.GeminiChat)
+
+	// ============================================================
 	// Compare endpoints (require auth)
 	// ============================================================
 	mux.HandleFunc("GET /api/compare", middleware.RequireAuth(handlers.GetComparison))
 	mux.HandleFunc("POST /api/compare", middleware.RequireAuth(handlers.AddToComparison))
+	mux.HandleFunc("DELETE /api/compare", middleware.RequireAuth(handlers.ClearComparison))
 	mux.HandleFunc("DELETE /api/compare/{productId}", middleware.RequireAuth(handlers.RemoveFromComparison))
 
 	// ============================================================
@@ -103,9 +123,14 @@ func main() {
 	mux.HandleFunc("POST /api/admin/products", middleware.RequireAdmin(handlers.AdminCreateProduct))
 	mux.HandleFunc("PUT /api/admin/products/{id}", middleware.RequireAdmin(handlers.AdminUpdateProduct))
 	mux.HandleFunc("DELETE /api/admin/products/{id}", middleware.RequireAdmin(handlers.AdminDeleteProduct))
+	mux.HandleFunc("PUT /api/admin/products/{id}/toggle-hidden", middleware.RequireAdmin(handlers.AdminToggleProductHidden))
 	mux.HandleFunc("GET /api/admin/orders", middleware.RequireAdmin(handlers.AdminGetOrders))
 	mux.HandleFunc("GET /api/admin/orders/{id}", middleware.RequireAdmin(handlers.AdminGetOrderDetail))
 	mux.HandleFunc("PUT /api/admin/orders/{id}", middleware.RequireAdmin(handlers.AdminUpdateOrderStatus))
+	mux.HandleFunc("GET /api/admin/filter-options", middleware.RequireAdmin(handlers.AdminGetFilterOptions))
+	mux.HandleFunc("POST /api/admin/filter-options", middleware.RequireAdmin(handlers.AdminCreateFilterOption))
+	mux.HandleFunc("PUT /api/admin/filter-options/{id}", middleware.RequireAdmin(handlers.AdminUpdateFilterOption))
+	mux.HandleFunc("DELETE /api/admin/filter-options/{id}", middleware.RequireAdmin(handlers.AdminDeleteFilterOption))
 
 	// ============================================================
 	// Static files — serve frontend directory

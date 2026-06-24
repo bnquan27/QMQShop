@@ -48,15 +48,22 @@ type Product struct {
 	ID           int               `json:"id"`
 	CategoryID   *int              `json:"category_id"`
 	CategoryName string            `json:"category_name"`
+	Brand        string            `json:"brand"`
 	Name         string            `json:"name"`
 	Slug         string            `json:"slug"`
 	Description  string            `json:"description"`
 	Specs        map[string]string `json:"specs"`
+	CPU          string            `json:"cpu"`
+	RAM          string            `json:"ram"`
+	GPU          string            `json:"gpu"`
+	Disk         string            `json:"disk"`
+	ComponentType string           `json:"component_type"`
 	Price        int64             `json:"price"`
 	OldPrice     *int64            `json:"old_price,omitempty"`
 	Images       []string          `json:"images"`
 	Stock        int               `json:"stock"`
 	Featured     bool              `json:"featured"`
+	Hidden       bool              `json:"hidden"`
 	CreatedAt    time.Time         `json:"created_at"`
 	UpdatedAt    time.Time         `json:"updated_at"`
 }
@@ -133,13 +140,14 @@ type ComparisonItem struct {
 // ComparisonWithProduct
 type ComparisonWithProduct struct {
 	ComparisonItem
-	ProductName  string            `json:"product_name"`
-	ProductImage string            `json:"product_image"`
-	ProductPrice int64             `json:"product_price"`
-	ProductSlug  string            `json:"product_slug"`
-	Specs        map[string]string `json:"specs"`
-	CategoryID   int               `json:"category_id"`
-	CategoryName string            `json:"category_name"`
+	ProductName   string            `json:"product_name"`
+	ProductImage  string            `json:"product_image"`
+	ProductPrice  int64             `json:"product_price"`
+	ProductSlug   string            `json:"product_slug"`
+	Specs         map[string]string `json:"specs"`
+	CategoryID    int               `json:"category_id"`
+	CategoryName  string            `json:"category_name"`
+	ComponentType string            `json:"component_type"`
 }
 
 // ============================================================
@@ -200,17 +208,60 @@ type CompareAddRequest struct {
 
 // Admin product create/update
 type ProductCreateRequest struct {
-	CategoryID  *int              `json:"category_id"`
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	Specs       map[string]string `json:"specs"`
-	Price       int64             `json:"price"`
-	OldPrice    *int64            `json:"old_price"`
-	Images      []string          `json:"images"`
-	Stock       int               `json:"stock"`
-	Featured    bool              `json:"featured"`
+	CategoryID    *int              `json:"category_id"`
+	Brand         string            `json:"brand"`
+	Name          string            `json:"name"`
+	Description   string            `json:"description"`
+	Specs         map[string]string `json:"specs"`
+	CPU           string            `json:"cpu"`
+	RAM           string            `json:"ram"`
+	GPU           string            `json:"gpu"`
+	Disk          string            `json:"disk"`
+	ComponentType string            `json:"component_type"`
+	Price         int64             `json:"price"`
+	OldPrice      *int64            `json:"old_price"`
+	Images        []string          `json:"images"`
+	Stock         int               `json:"stock"`
+	Featured      bool              `json:"featured"`
 }
 
 type OrderStatusUpdate struct {
 	Status string `json:"status"`
+}
+
+// ============================================================
+// FilterOption — admin-managed filter values
+// ============================================================
+type FilterOption struct {
+	ID        int       `json:"id"`
+	Type      string    `json:"type"`
+	Value     string    `json:"value"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type FilterOptionRequest struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
+// Component types for PC Builder
+var ComponentTypes = []string{
+	"cpu", "mainboard", "ram", "gpu", "storage", "cooler", "case", "monitor",
+}
+
+var ComponentTypeLabels = map[string]string{
+	"cpu":       "CPU",
+	"mainboard": "Mainboard",
+	"ram":       "RAM",
+	"gpu":       "Card Đồ Họa",
+	"storage":   "Ổ Cứng",
+	"cooler":    "Tản Nhiệt",
+	"case":      "Vỏ Case",
+	"monitor":   "Màn Hình",
+}
+
+type ComponentGroup struct {
+	Type   string           `json:"type"`
+	Label  string           `json:"label"`
+	Products []Product      `json:"products"`
 }

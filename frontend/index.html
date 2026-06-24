@@ -1,295 +1,419 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
+
 <head>
-  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('qmq_theme') || 'dark')</script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>QMQSHOP — Laptop, PC Gaming & Linh Kiện Chính Hãng</title>
-  <meta name="description" content="QMQSHOP - Cửa hàng laptop gaming, PC gaming, PC văn phòng và linh kiện máy tính chính hãng tại Việt Nam." />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="css/style.css" />
+	<script>
+		document.documentElement.setAttribute(
+			"data-theme",
+			localStorage.getItem("qmq_theme") || "dark",
+		);
+	</script>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>QMQSHOP — Laptop, PC Gaming & Linh Kiện Chính Hãng</title>
+	<meta name="description"
+		content="QMQSHOP - Cửa hàng laptop gaming, PC gaming, PC văn phòng và linh kiện máy tính chính hãng tại Việt Nam." />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+	<link rel="stylesheet" href="css/style.css" />
 </head>
+
 <body>
-  <!-- ============================================================
+	<!-- ============================================================
        HEADER
        ============================================================ -->
-  <header class="main-header">
-    <div class="header-inner">
-      <button class="hamburger" onclick="document.querySelector('.category-nav').classList.toggle('show')" aria-label="Menu">
-        <span></span><span></span><span></span>
-      </button>
+	<header class="main-header">
+		<div class="header-inner">
+			<button class="hamburger" onclick="
+            document.querySelector('.category-nav').classList.toggle('show')
+          " aria-label="Menu">
+				<span></span><span></span><span></span>
+			</button>
 
-      <a href="/" class="logo">
-        <img src="../assets/logo.png" alt="QMQSHOP" class="logo-img" />
-        <div class="logo-text">
-          <span class="logo-brand">QMQ<span>SHOP</span></span>
-          <span class="logo-sub">SINCE 2026</span>
-        </div>
-      </a>
+			<a href="/" class="logo">
+				<img src="../assets/logo.png" alt="QMQSHOP" class="logo-img" />
+				<div class="logo-text">
+					<span class="logo-brand">QMQ<span>SHOP</span></span>
+					<span class="logo-sub">SINCE 2026</span>
+				</div>
+			</a>
 
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-        <input type="text" id="global-search" placeholder="Tìm laptop, PC, linh kiện..." onkeydown="if(event.key==='Enter' && this.value.trim()) window.location.href='/products.html?search='+encodeURIComponent(this.value.trim())" />
-      </div>
+			<div class="search-box">
+				<i class="fa-solid fa-magnifying-glass search-icon"></i>
+				<input type="text" id="global-search" placeholder="Tìm laptop, PC, linh kiện..." onkeydown="
+              if (event.key === 'Enter' && this.value.trim())
+                window.location.href =
+                  '/products.html?search=' +
+                  encodeURIComponent(this.value.trim());
+            " />
+			</div>
 
-      <div class="header-tools" id="auth-header-section">
-        <!-- Populated by Auth.updateHeader() -->
-        <a href="/cart.html" class="cart-btn" id="header-cart-btn">
-          <i class="fa-solid fa-bag-shopping"></i>
-          <span class="cart-count" id="header-cart-count">0</span>
-        </a>
-      </div>
-    </div>
-  </header>
+			<div class="header-tools" id="auth-header-section">
+				<!-- Populated by Auth.updateHeader() -->
+				<a href="/cart.html" class="cart-btn" id="header-cart-btn">
+					<i class="fa-solid fa-bag-shopping"></i>
+					<span class="cart-count" id="header-cart-count">0</span>
+				</a>
+			</div>
+		</div>
+	</header>
 
-  <!-- ============================================================
+	<!-- ============================================================
        NAVIGATION
        ============================================================ -->
-  <nav class="category-nav" id="main-nav">
-    <div class="nav-inner">
-      <a href="/" class="nav-item"><i class="fa-solid fa-house"></i> Trang chủ</a>
-      <a href="/products.html?category=1" class="nav-item"><i class="fa-solid fa-laptop"></i> Laptop Gaming</a>
-      <a href="/products.html?category=2" class="nav-item"><i class="fa-solid fa-gamepad"></i> PC Gaming</a>
-      <a href="/products.html?category=3" class="nav-item"><i class="fa-solid fa-briefcase"></i> PC Văn Phòng</a>
-      <a href="/products.html?category=4" class="nav-item"><i class="fa-solid fa-microchip"></i> Linh Kiện</a>
-    </div>
-  </nav>
+	<nav class="category-nav" id="main-nav">
+		<div class="nav-inner">
+			<a href="/" class="nav-item"><i class="fa-solid fa-house"></i> Trang chủ</a>
+			<a href="/products.html?category=1&amp;page=1" class="nav-item"><i class="fa-solid fa-laptop"></i> Laptop Gaming</a>
+			<a href="/products.html?category=2&amp;page=1" class="nav-item"><i class="fa-solid fa-gamepad"></i> PC Gaming</a>
+			<a href="/products.html?category=3&amp;page=1" class="nav-item"><i class="fa-solid fa-briefcase"></i> PC Văn Phòng</a>
+			<a href="/products.html?category=4&amp;page=1" class="nav-item"><i class="fa-solid fa-microchip"></i> Linh Kiện</a>
+			<a href="/build.html" class="nav-item"><i class="fa-solid fa-microchip"></i> Xây dựng PC</a>
+		</div>
+	</nav>
 
-  <!-- ============================================================
+	<!-- ============================================================
        HERO BANNER
        ============================================================ -->
-  <section class="hero" id="hero">
-    <div class="hero-slider" id="hero-slider">
-      <div class="hero-slide active">
-        <img src="https://images.unsplash.com/photo-1603481588273-2f908a9a7a1b?q=80&w=1600&auto=format&fit=crop" alt="Gaming PC" />
-      </div>
-      <div class="hero-slide">
-        <img src="https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=1600&auto=format&fit=crop" alt="Laptop Gaming" />
-      </div>
-      <div class="hero-slide">
-        <img src="https://images.unsplash.com/photo-1587202372634-32705e3bf49c?q=80&w=1600&auto=format&fit=crop" alt="PC Components" />
-      </div>
-    </div>
+	<section class="hero" id="hero">
+		<div class="hero-slider" id="hero-slider">
+			<div class="hero-slide active">
+				<img src="https://images.unsplash.com/photo-1603481588273-2f908a9a7a1b?q=80&w=1600&auto=format&fit=crop"
+					alt="Gaming PC" />
+			</div>
+			<div class="hero-slide">
+				<img src="https://images.unsplash.com/photo-1547082299-de196ea013d6?q=80&w=1600&auto=format&fit=crop"
+					alt="Laptop Gaming" />
+			</div>
+			<div class="hero-slide">
+				<img src="https://images.unsplash.com/photo-1587202372634-32705e3bf49c?q=80&w=1600&auto=format&fit=crop"
+					alt="PC Components" />
+			</div>
+		</div>
 
-    <div class="hero-overlay">
-      <div class="hero-text">
-        <h1>QMQ<span>SHOP</span></h1>
-        <p>Laptop, PC Gaming & Linh Kiện Chính Hãng — Giá Tốt Nhất Thị Trường</p>
-        <a href="/products.html" class="btn-primary">
-          MUA NGAY <i class="fa-solid fa-arrow-right"></i>
-        </a>
-      </div>
-    </div>
+		<div class="hero-overlay">
+			<div class="hero-text">
+				<h1>QMQ<span>SHOP</span></h1>
+				<p>
+					Laptop, PC Gaming & Linh Kiện Chính Hãng — Giá Tốt Nhất Thị Trường
+				</p>
+				<a href="/products.html" class="btn-primary">
+					MUA NGAY <i class="fa-solid fa-arrow-right"></i>
+				</a>
+			</div>
+		</div>
 
-    <div class="hero-dots" id="hero-dots"></div>
-  </section>
+		<div class="hero-dots" id="hero-dots"></div>
+	</section>
 
-  <!-- ============================================================
+	<!-- ============================================================
        FEATURED PRODUCTS — SWIPER
        ============================================================ -->
-  <main class="container">
-    <section class="featured-swiper-section">
-      <div class="featured-swiper-header">
-        <h2><i class="fa-solid fa-fire"></i> Nổi Bật</h2>
-      </div>
-      <div class="featured-swiper-wrap">
-        <button class="swiper-btn swiper-btn-prev" onclick="scrollSwiper(-1)" aria-label="Trước">
-          <i class="fa-solid fa-chevron-left"></i>
-        </button>
-        <div class="featured-swiper" id="featured-swiper">
-          <div class="loading-center">
-            <div class="spinner"></div>
-            <span>Đang tải sản phẩm...</span>
-          </div>
-        </div>
-        <button class="swiper-btn swiper-btn-next" onclick="scrollSwiper(1)" aria-label="Tiếp theo">
-          <i class="fa-solid fa-chevron-right"></i>
-        </button>
-      </div>
-    </section>
+	<main class="container">
+		<section class="featured-swiper-section">
+			<div class="featured-swiper-header">
+				<h2><i class="fa-solid fa-fire"></i> Nổi Bật</h2>
+			</div>
+			<div class="featured-swiper-wrap">
+				<button class="swiper-btn swiper-btn-prev" onclick="scrollSwiper(-1)" aria-label="Trước">
+					<i class="fa-solid fa-chevron-left"></i>
+				</button>
+				<div class="featured-swiper" id="featured-swiper">
+					<div class="loading-center">
+						<div class="spinner"></div>
+						<span>Đang tải sản phẩm...</span>
+					</div>
+				</div>
+				<button class="swiper-btn swiper-btn-next" onclick="scrollSwiper(1)" aria-label="Tiếp theo">
+					<i class="fa-solid fa-chevron-right"></i>
+				</button>
+			</div>
+		</section>
 
-    <!-- ============================================================
+		<!-- ============================================================
          ALL PRODUCTS
          ============================================================ -->
-    <section class="all-products-section">
-      <div class="section-title">
-        <h2><i class="fa-solid fa-store"></i> Tất cả sản phẩm</h2>
-      </div>
-      <div class="product-grid" id="all-products-grid">
-        <div class="loading-center" style="grid-column:1/-1;">
-          <div class="spinner"></div>
-          <span>Đang tải sản phẩm...</span>
-        </div>
-      </div>
-    </section>
-  </main>
+		<section class="all-products-section">
+			<div class="section-title">
+				<h2><i class="fa-solid fa-store"></i> Tất cả sản phẩm</h2>
+			</div>
+			<div class="product-grid" id="all-products-grid">
+				<div class="loading-center" style="grid-column: 1/-1">
+					<div class="spinner"></div>
+					<span>Đang tải sản phẩm...</span>
+				</div>
+			</div>
+			<div id="all-products-pagination"></div>
+		</section>
+	</main>
 
-  <!-- ============================================================
+	<!-- ============================================================
        FOOTER
        ============================================================ -->
-  <footer class="main-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <div class="logo-text" style="margin-bottom:12px;">
-            <span class="logo-brand">QMQ<span>SHOP</span></span>
-            <span class="logo-sub">SINCE 2026</span>
-          </div>
-          <p>QMQSHOP là cửa hàng chuyên cung cấp laptop gaming, PC gaming, PC văn phòng và linh kiện máy tính chính hãng. Cam kết giá tốt, bảo hành uy tín.</p>
-        </div>
-        <div class="footer-col">
-          <h5>Danh mục</h5>
-          <a href="/products.html?category=1">Laptop Gaming</a>
-          <a href="/products.html?category=2">PC Gaming</a>
-          <a href="/products.html?category=3">PC Văn Phòng</a>
-          <a href="/products.html?category=4">Linh Kiện</a>
-        </div>
-        <div class="footer-col">
-          <h5>Hỗ trợ</h5>
-          <a href="#">Hướng dẫn mua hàng</a>
-          <a href="#">Chính sách bảo hành</a>
-          <a href="#">Chính sách đổi trả</a>
-          <a href="#">Vận chuyển</a>
-        </div>
-        <div class="footer-col">
-          <h5>Liên hệ</h5>
-          <a href="#"><i class="fa-solid fa-phone" style="width:18px;color:var(--accent);"></i> 1900.xxxx</a>
-          <a href="#"><i class="fa-solid fa-envelope" style="width:18px;color:var(--accent);"></i> info@qmqshop.com</a>
-          <a href="#"><i class="fa-solid fa-location-dot" style="width:18px;color:var(--accent);"></i> Hà Nội, Việt Nam</a>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2026 QMQSHOP. All rights reserved.</span>
-        <div class="footer-social">
-          <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-          <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
-        </div>
-      </div>
-    </div>
-  </footer>
+	<footer class="main-footer">
+		<div class="container">
+			<div class="footer-grid">
+				<div class="footer-brand">
+					<div class="logo-text" style="margin-bottom: 12px">
+						<span class="logo-brand">QMQ<span>SHOP</span></span>
+						<span class="logo-sub">SINCE 2026</span>
+					</div>
+					<p>
+						QMQSHOP là cửa hàng chuyên cung cấp laptop gaming, PC gaming, PC
+						văn phòng và linh kiện máy tính chính hãng. Cam kết giá tốt, bảo
+						hành uy tín.
+					</p>
+				</div>
+				<div class="footer-col">
+					<h5>Danh mục</h5>
+					<a href="/products.html?category=1&amp;page=1">Laptop Gaming</a>
+					<a href="/products.html?category=2&amp;page=1">PC Gaming</a>
+					<a href="/products.html?category=3&amp;page=1">PC Văn Phòng</a>
+					<a href="/products.html?category=4&amp;page=1">Linh Kiện</a>
+				</div>
+				<div class="footer-col">
+					<h5>Hỗ trợ</h5>
+					<a href="#">Hướng dẫn mua hàng</a>
+					<a href="#">Chính sách bảo hành</a>
+					<a href="#">Chính sách đổi trả</a>
+					<a href="#">Vận chuyển</a>
+				</div>
+				<div class="footer-col">
+					<h5>Liên hệ</h5>
+					<a href="#"><i class="fa-solid fa-phone" style="width: 18px; color: var(--accent)"></i>
+						1900.xxxx</a>
+					<a href="#"><i class="fa-solid fa-envelope" style="width: 18px; color: var(--accent)"></i>
+						info@qmqshop.com</a>
+					<a href="#"><i class="fa-solid fa-location-dot" style="width: 18px; color: var(--accent)"></i>
+						Hà Nội, Việt Nam</a>
+				</div>
+			</div>
+			<div class="footer-bottom">
+				<span>&copy; 2026 QMQSHOP. All rights reserved.</span>
+				<div class="footer-social">
+					<a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+					<a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+					<a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+				</div>
+			</div>
+		</div>
+	</footer>
 
-  <!-- ============================================================
+	<!-- ============================================================
        SCRIPTS
        ============================================================ -->
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="js/compare.js"></script>
-  <script>
-    // ============================================================
-    // Hero Slider
-    // ============================================================
-    let currentSlide = 0;
-    const slides = document.querySelectorAll('.hero-slide');
-    const dotsContainer = document.getElementById('hero-dots');
+	<script src="js/api.js"></script>
+	<script src="js/auth.js"></script>
+	<script src="js/cart.js"></script>
+	<script src="js/compare.js"></script>
+	<script src="js/chatbox.js"></script>
+	<script>
+		// ============================================================
+		// Hero Slider
+		// ============================================================
+		let currentSlide = 0;
+		const slides = document.querySelectorAll(".hero-slide");
+		const dotsContainer = document.getElementById("hero-dots");
 
-    slides.forEach((_, i) => {
-      const dot = document.createElement('button');
-      dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
-      dot.onclick = () => goToSlide(i);
-      dotsContainer.appendChild(dot);
-    });
+		slides.forEach((_, i) => {
+			const dot = document.createElement("button");
+			dot.className = "hero-dot" + (i === 0 ? " active" : "");
+			dot.onclick = () => goToSlide(i);
+			dotsContainer.appendChild(dot);
+		});
 
-    function goToSlide(index) {
-      slides.forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.hero-dot').forEach(d => d.classList.remove('active'));
-      currentSlide = index;
-      slides[currentSlide].classList.add('active');
-      document.querySelectorAll('.hero-dot')[currentSlide].classList.add('active');
-    }
+		function goToSlide(index) {
+			slides.forEach((s) => s.classList.remove("active"));
+			document
+				.querySelectorAll(".hero-dot")
+				.forEach((d) => d.classList.remove("active"));
+			currentSlide = index;
+			slides[currentSlide].classList.add("active");
+			document
+				.querySelectorAll(".hero-dot")
+			[currentSlide].classList.add("active");
+		}
 
-    function nextSlide() { goToSlide((currentSlide + 1) % slides.length); }
+		function nextSlide() {
+			goToSlide((currentSlide + 1) % slides.length);
+		}
 
-    setInterval(nextSlide, 5000);
+		setInterval(nextSlide, 5000);
 
-    // ============================================================
-    // Load Featured Products — Swiper
-    // ============================================================
-    async function loadFeatured() {
-      const container = document.getElementById('featured-swiper');
-      try {
-        const data = await API.getFeatured();
-        if (!data.products || data.products.length === 0) {
-          container.innerHTML = '<div class="loading-center"><span>Chưa có sản phẩm nổi bật</span></div>';
-          return;
-        }
-        container.innerHTML = data.products.map((p, idx) => renderProductCard(p, idx)).join('');
-      } catch (err) {
-        container.innerHTML = '<div class="loading-center"><span>Lỗi tải sản phẩm: ' + err.message + '</span></div>';
-      }
-    }
+		// ============================================================
+		// Load Featured Products — Swiper
+		// ============================================================
+		async function loadFeatured() {
+			const container = document.getElementById("featured-swiper");
+			try {
+				const data = await API.getFeatured();
+				if (!data.products || data.products.length === 0) {
+					container.innerHTML =
+						'<div class="loading-center"><span>Chưa có sản phẩm nổi bật</span></div>';
+					return;
+				}
+				container.innerHTML = data.products
+					.map((p, idx) => renderProductCard(p, idx))
+					.join("");
+			} catch (err) {
+				container.innerHTML =
+					'<div class="loading-center"><span>Lỗi tải sản phẩm: ' +
+					err.message +
+					"</span></div>";
+			}
+		}
 
-    // ============================================================
-    // Swiper Scroll
-    // ============================================================
-    function scrollSwiper(dir) {
-      const container = document.getElementById('featured-swiper');
-      const card = container.querySelector('.product-card');
-      if (!card) return;
-      const cardWidth = card.offsetWidth + 16; // card + gap
-      container.scrollBy({ left: cardWidth * 2 * dir, behavior: 'smooth' });
-    }
+		// ============================================================
+		// Swiper Scroll
+		// ============================================================
+		function scrollSwiper(dir) {
+			const container = document.getElementById("featured-swiper");
+			const card = container.querySelector(".product-card");
+			if (!card) return;
+			const cardWidth = card.offsetWidth + 16; // card + gap
+			container.scrollBy({left: cardWidth * 2 * dir, behavior: "smooth"});
+		}
 
-    // ============================================================
-    // Render Product Card
-    // ============================================================
-    function renderProductCard(p, idx) {
-      const img = p.images && p.images[0] ? p.images[0] : '';
-      const discount = p.old_price && p.old_price > p.price
-        ? Math.round((1 - p.price / p.old_price) * 100)
-        : 0;
-      const oos = p.stock < 1;
-      return `
+		// ============================================================
+		// Render Product Card
+		// ============================================================
+		function renderProductCard(p, idx) {
+			const img = p.images && p.images[0] ? p.images[0] : "";
+			const discount =
+				p.old_price && p.old_price > p.price
+					? Math.round((1 - p.price / p.old_price) * 100)
+					: 0;
+			const oos = p.stock < 1;
+			return `
         <div class="product-card">
-          ${oos ? '<span class="badge badge-gray">Hết hàng</span>' : (discount > 0 ? `<span class="badge badge-red">-${discount}%</span>` : '')}
+          ${oos ? '<span class="badge badge-gray">Hết hàng</span>' : discount > 0 ? `<span class="badge badge-red">-${discount}%</span>` : ""}
           <a href="/product.html?id=${p.id}" class="product-img-wrap">
             <img src="${img}" alt="${p.name}" loading="lazy" />
           </a>
           <a href="/product.html?id=${p.id}" class="product-name">${p.name}</a>
           <div class="product-specs">
-            ${p.specs && p.specs.CPU ? p.specs.CPU : ''}
-            ${p.specs && p.specs.GPU ? ' | ' + p.specs.GPU : ''}
-            ${p.specs && p.specs.RAM ? ' | ' + p.specs.RAM : ''}
+            ${p.cpu || ""}
+            ${p.gpu ? " | " + p.gpu : ""}
+            ${p.ram ? " | " + p.ram : ""}
           </div>
           <div class="product-price-row">
             <span class="price-current">${formatPrice(p.price)}</span>
-            ${p.old_price ? `<span class="price-old">${formatPrice(p.old_price)}</span>` : ''}
+            ${p.old_price ? `<span class="price-old">${formatPrice(p.old_price)}</span>` : ""}
           </div>
           ${oos ? '<button class="btn-add-cart" disabled style="opacity:0.4;cursor:not-allowed;">Hết hàng</button>' : `<button class="btn-add-cart" onclick="event.preventDefault(); Cart.add(${p.id})"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>`}
         </div>
       `;
-    }
+		}
 
-    // ============================================================
-    // Load All Products
-    // ============================================================
-    async function loadAllProducts() {
-      const grid = document.getElementById('all-products-grid');
-      try {
-        const data = await API.getProducts({ limit: 50 });
-        const items = data.products || data;
-        if (!items || items.length === 0) {
-          grid.innerHTML = '<div class="loading-center" style="grid-column:1/-1;"><span>Chưa có sản phẩm</span></div>';
-          return;
-        }
-        grid.innerHTML = items.map((p, idx) => renderProductCard(p, idx)).join('');
-      } catch (err) {
-        grid.innerHTML = '<div class="loading-center" style="grid-column:1/-1;"><span>Lỗi tải sản phẩm: ' + err.message + '</span></div>';
-      }
-    }
+		// ============================================================
+		// Load All Products — With Pagination
+		// ============================================================
+		let allProductsPage = 1;
+		let allProductsTotalPages = 1;
 
-    // ============================================================
-    // Init
-    // ============================================================
-    document.addEventListener('DOMContentLoaded', async () => {
-      await Auth.init();
-      Auth.updateHeader();
-      await Cart.load();
-      await Compare.load();
-      await loadFeatured();
-      await loadAllProducts();
-    });
-  </script>
+		async function loadAllProducts(page) {
+			if (page != null) allProductsPage = page;
+			const grid = document.getElementById("all-products-grid");
+			const pagination = document.getElementById("all-products-pagination");
+			grid.innerHTML =
+				'<div class="loading-center" style="grid-column:1/-1;"><div class="spinner"></div><span>Đang tải sản phẩm...</span></div>';
+			try {
+				const data = await API.getProducts({page: allProductsPage, limit: 12});
+				const items = data.products || data;
+				allProductsTotalPages = data.total_pages || 1;
+				if (!items || items.length === 0) {
+					grid.innerHTML =
+						'<div class="loading-center" style="grid-column:1/-1;"><span>Chưa có sản phẩm</span></div>';
+					pagination.innerHTML = "";
+					return;
+				}
+				grid.innerHTML = items
+					.map((p, idx) => renderProductCard(p, idx))
+					.join("");
+				renderPagination();
+			} catch (err) {
+				grid.innerHTML =
+					'<div class="loading-center" style="grid-column:1/-1;"><span>Lỗi tải sản phẩm: ' +
+					err.message +
+					"</span></div>";
+				pagination.innerHTML = "";
+			}
+		}
+
+		function renderPagination() {
+			const pagination = document.getElementById("all-products-pagination");
+			if (allProductsTotalPages <= 1) {
+				pagination.innerHTML = "";
+				return;
+			}
+			let html = '<div class="pagination">';
+			// Prev
+			html +=
+				'<button class="page-btn' +
+				(allProductsPage <= 1 ? " disabled" : "") +
+				'" onclick="goToPage(' +
+				(allProductsPage - 1) +
+				')" ' +
+				(allProductsPage <= 1 ? "disabled" : "") +
+				'><i class="fa-solid fa-chevron-left"></i></button>';
+			// Page numbers
+			const start = Math.max(1, allProductsPage - 2);
+			const end = Math.min(allProductsTotalPages, allProductsPage + 2);
+			if (start > 1) {
+				html += '<button class="page-btn" onclick="goToPage(1)">1</button>';
+				if (start > 2) html += '<span class="page-ellipsis">...</span>';
+			}
+			for (let i = start; i <= end; i++) {
+				html +=
+					'<button class="page-btn' +
+					(i === allProductsPage ? " active" : "") +
+					'" onclick="goToPage(' +
+					i +
+					')">' +
+					i +
+					"</button>";
+			}
+			if (end < allProductsTotalPages) {
+				if (end < allProductsTotalPages - 1)
+					html += '<span class="page-ellipsis">...</span>';
+				html +=
+					'<button class="page-btn" onclick="goToPage(' +
+					allProductsTotalPages +
+					')">' +
+					allProductsTotalPages +
+					"</button>";
+			}
+			// Next
+			html +=
+				'<button class="page-btn' +
+				(allProductsPage >= allProductsTotalPages ? " disabled" : "") +
+				'" onclick="goToPage(' +
+				(allProductsPage + 1) +
+				')" ' +
+				(allProductsPage >= allProductsTotalPages ? "disabled" : "") +
+				'><i class="fa-solid fa-chevron-right"></i></button>';
+			html += "</div>";
+			pagination.innerHTML = html;
+		}
+
+		function goToPage(page) {
+			if (page < 1 || page > allProductsTotalPages || page === allProductsPage) return;
+			allProductsPage = page;
+			loadAllProducts();
+			document.getElementById("all-products-grid").scrollIntoView({behavior: "smooth", block: "start"});
+		}
+
+		// ============================================================
+		// Init
+		// ============================================================
+		document.addEventListener("DOMContentLoaded", async () => {
+			await Auth.init();
+			Auth.updateHeader();
+			await Cart.load();
+			await Compare.load();
+			await loadFeatured();
+			await loadAllProducts();
+		});
+	</script>
 </body>
+
 </html>

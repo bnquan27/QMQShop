@@ -62,10 +62,17 @@ func AddToComparison(w http.ResponseWriter, r *http.Request) {
 
 	if len(current) > 0 {
 		existingCatID := current[0].CategoryID
-		newProduct, _ := database.GetProductByID(req.ProductID)
-		if newProduct != nil && newProduct.CategoryID != nil && *newProduct.CategoryID != existingCatID {
+		if product.CategoryID != nil && *product.CategoryID != existingCatID {
 			middleware.JSON(w, http.StatusBadRequest, models.ErrorResponse{
 				Error: "Chỉ có thể so sánh sản phẩm trong cùng danh mục",
+			})
+			return
+		}
+		// For component-type products, enforce same component type
+		existingCT := current[0].ComponentType
+		if existingCT != "" && product.ComponentType != "" && product.ComponentType != existingCT {
+			middleware.JSON(w, http.StatusBadRequest, models.ErrorResponse{
+				Error: "Chỉ có thể so sánh linh kiện cùng loại",
 			})
 			return
 		}
@@ -78,6 +85,24 @@ func AddToComparison(w http.ResponseWriter, r *http.Request) {
 
 	items, _ := database.GetComparisonProducts(comp.ID)
 	middleware.JSON(w, http.StatusOK, items)
+}
+
+// DELETE /api/compare — clear all products from comparison
+func ClearComparison(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value(middleware.UserKey).(*models.User)
+
+	comp, err := database.GetOrCreateComparison(user.ID)
+	if err != nil {
+		middleware.JSON(w, http.StatusInternalServerError, models.ErrorResponse{Error: "Lỗi tải danh sách so sánh"})
+		return
+	}
+
+	if err := database.ClearComparison(comp.ID); err != nil {
+		middleware.JSON(w, http.StatusInternalServerError, models.ErrorResponse{Error: "Lỗi xóa danh sách so sánh"})
+		return
+	}
+
+	middleware.JSON(w, http.StatusOK, map[string]string{"message": "Đã xóa danh sách so sánh"})
 }
 
 // DELETE /api/compare/{productId} — remove product from comparison

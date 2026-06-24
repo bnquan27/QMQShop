@@ -72,24 +72,20 @@ const Compare = {
 
 		this._ensureModal();
 
-		// Load current compare items
+		// Reset: clear all items from server first
+		try {
+			await API.clearCompare();
+		} catch (err) {
+			// ignore
+		}
 		await this.load();
 
 		if (productId) {
-			const isInList = this._items.some((p) => p.product_id === productId);
-			if (!isInList) {
-				if (this._items.length >= this.MAX_COMPARE) {
-					Toast.warning(
-						"Chỉ được so sánh tối đa " + this.MAX_COMPARE + " sản phẩm",
-					);
-				} else {
-					try {
-						await API.addToCompare(productId);
-						await this.load();
-					} catch (err) {
-						Toast.error(err.message);
-					}
-				}
+			try {
+				await API.addToCompare(productId);
+				await this.load();
+			} catch (err) {
+				Toast.error(err.message);
 			}
 		}
 
@@ -217,25 +213,29 @@ const Compare = {
 			'<div class="loading-center" style="padding:20px;"><div class="spinner"></div></div>';
 
 		try {
-			// Determine category from current compare items
-			const catId = this._items.length > 0 ? this._items[0].category_id : null;
-			const catName =
-				this._items.length > 0 ? this._items[0].category_name : null;
+			// Determine category / component type from current compare items
+			const firstItem = this._items.length > 0 ? this._items[0] : null;
+			const catId = firstItem ? firstItem.category_id : null;
+			const catName = firstItem ? firstItem.category_name : null;
+			const compType = firstItem ? firstItem.component_type : null;
 
-			// Show category notice
+			// Show category / type notice
 			const notice = document.getElementById("cms-category-notice");
 			if (catId) {
 				notice.style.display = "flex";
 				notice.innerHTML =
 					'<i class="fa-solid fa-layer-group"></i> Danh mục: <strong>' +
 					catName +
-					"</strong>";
+					(compType
+						? '</strong> &middot; Loại: <strong>' + compType + "</strong>"
+						: "</strong>");
 			} else {
 				notice.style.display = "none";
 			}
 
 			const params = { limit: 30 };
 			if (catId) params.category = catId;
+			if (compType) params.component_type = compType;
 			if (searchTerm && searchTerm.trim()) params.search = searchTerm.trim();
 			const data = await API.getProducts(params);
 			const products = data.products || [];

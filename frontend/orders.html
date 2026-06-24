@@ -1,147 +1,184 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
+
 <head>
-  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('qmq_theme') || 'dark')</script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Đơn hàng — QMQSHOP</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="css/style.css" />
+	<script>
+		document.documentElement.setAttribute(
+			"data-theme",
+			localStorage.getItem("qmq_theme") || "dark",
+		);
+	</script>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Đơn hàng — QMQSHOP</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+	<link rel="stylesheet" href="css/style.css" />
 </head>
+
 <body>
-  <header class="main-header">
-    <div class="header-inner">
-      <a href="/" class="logo">
-        <img src="../assets/logo.png" alt="" class="logo-img" />
-        <div class="logo-text">
-          <span class="logo-brand">QMQ<span>SHOP</span></span>
-          <span class="logo-sub">SINCE 2026</span>
-        </div>
-      </a>
-      <div class="header-tools" id="auth-header-section"></div>
-    </div>
-  </header>
+	<header class="main-header">
+		<div class="header-inner">
+			<a href="/" class="logo">
+				<img src="../assets/logo.png" alt="" class="logo-img" />
+				<div class="logo-text">
+					<span class="logo-brand">QMQ<span>SHOP</span></span>
+					<span class="logo-sub">SINCE 2026</span>
+				</div>
+			</a>
+			<div class="header-tools" id="auth-header-section"></div>
+		</div>
+	</header>
 
-  <main class="container" style="padding:30px 20px;">
-    <h1 style="font-size:24px;letter-spacing:2px;margin-bottom:24px;">
-      <i class="fa-solid fa-box" style="color:var(--accent);"></i> ĐƠN HÀNG CỦA TÔI
-    </h1>
+	<main class="container" style="padding: 30px 20px">
+		<h1 style="font-size: 24px; letter-spacing: 2px; margin-bottom: 24px">
+			<i class="fa-solid fa-box" style="color: var(--accent)"></i> ĐƠN HÀNG
+			CỦA TÔI
+		</h1>
 
-    <div id="orders-loading" class="loading-center"><div class="spinner"></div><span>Đang tải...</span></div>
+		<div id="orders-loading" class="loading-center">
+			<div class="spinner"></div>
+			<span>Đang tải...</span>
+		</div>
 
-    <div id="orders-empty" style="display:none;" class="cart-empty">
-      <i class="fa-regular fa-box-open"></i>
-      <h3>Chưa có đơn hàng nào</h3>
-      <a href="/products.html" class="btn-primary">Mua sắm ngay</a>
-    </div>
+		<div id="orders-empty" style="display: none" class="cart-empty">
+			<i class="fa-regular fa-box-open"></i>
+			<h3>Chưa có đơn hàng nào</h3>
+			<a href="/products.html" class="btn-primary">Mua sắm ngay</a>
+		</div>
 
-    <div id="orders-list"></div>
-  </main>
+		<div id="orders-list"></div>
+	</main>
 
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="js/compare.js"></script>
-  <script>
-    const statusLabels = {
-      pending: 'Chờ xác nhận', confirmed: 'Đã xác nhận',
-      shipping: 'Đang giao', delivered: 'Đã giao', cancelled: 'Đã hủy'
-    };
+	<script src="js/api.js"></script>
+	<script src="js/auth.js"></script>
+	<script src="js/cart.js?v=1"></script>
+	<script src="js/compare.js"></script>
+	<script>
+		const statusLabels = {
+			pending: "Chờ xác nhận",
+			confirmed: "Đã xác nhận",
+			shipping: "Đang giao",
+			delivered: "Đã giao",
+			cancelled: "Đã hủy",
+		};
 
-    async function loadOrders() {
-      if (!Auth.isLoggedIn()) { window.location.href = '/auth.html'; return; }
+		async function loadOrders() {
+			if (!Auth.isLoggedIn()) {
+				window.location.href = "/auth.html";
+				return;
+			}
 
-      try {
-        const orders = await API.getOrders();
-        document.getElementById('orders-loading').style.display = 'none';
+			try {
+				const orders = await API.getOrders();
+				document.getElementById("orders-loading").style.display = "none";
 
-        if (orders.length === 0) {
-          document.getElementById('orders-empty').style.display = 'block';
-          return;
-        }
+				if (orders.length === 0) {
+					document.getElementById("orders-empty").style.display = "block";
+					return;
+				}
 
-        const list = document.getElementById('orders-list');
-        list.innerHTML = orders.map(o => `
+				const list = document.getElementById("orders-list");
+				list.innerHTML = orders
+					.map(
+						(o) => `
           <div class="order-card" onclick="viewOrder(${o.id})" style="cursor:pointer;">
             <div class="order-header">
-              <span class="order-id">#QMQ${String(o.id).padStart(5,'0')}</span>
+              <span class="order-id">#QMQ${String(o.id).padStart(5, "0")}</span>
               <span class="order-status status-${o.status}">${statusLabels[o.status] || o.status}</span>
             </div>
             <div class="order-detail">
-              <span>📅 ${new Date(o.created_at).toLocaleDateString('vi-VN')}</span>
+              <span>📅 ${new Date(o.created_at).toLocaleDateString("vi-VN")}</span>
               <span class="order-total">${formatPrice(o.total_amount)}</span>
             </div>
           </div>
-        `).join('');
-      } catch (err) {
-        document.getElementById('orders-loading').innerHTML = `<span>Lỗi: ${err.message}</span>`;
-      }
-    }
+        `,
+					)
+					.join("");
+			} catch (err) {
+				document.getElementById("orders-loading").innerHTML =
+					`<span>Lỗi: ${err.message}</span>`;
+			}
+		}
 
-    function canCancel(status) {
-      return status === 'pending' || status === 'confirmed';
-    }
+		function canCancel(status) {
+			return status === "pending" || status === "confirmed";
+		}
 
-    async function viewOrder(id) {
-      try {
-        const order = await API.getOrder(id);
-        const list = document.getElementById('orders-list');
-        list.innerHTML = `
+		async function viewOrder(id) {
+			try {
+				const order = await API.getOrder(id);
+				const list = document.getElementById("orders-list");
+				list.innerHTML = `
           <div style="margin-bottom:16px;">
             <a href="/orders.html" class="btn-ghost"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
           </div>
           <div class="order-card">
             <div class="order-header">
-              <span class="order-id">#QMQ${String(order.id).padStart(5,'0')}</span>
+              <span class="order-id">#QMQ${String(order.id).padStart(5, "0")}</span>
               <span class="order-status status-${order.status}">${statusLabels[order.status] || order.status}</span>
             </div>
             <div class="order-detail" style="margin-bottom:12px;">
-              <span>📅 ${new Date(order.created_at).toLocaleDateString('vi-VN')}</span>
+              <span>📅 ${new Date(order.created_at).toLocaleDateString("vi-VN")}</span>
               <span>📍 ${order.shipping_address}</span>
               <span>📞 ${order.phone}</span>
             </div>
-            ${order.note ? `<div style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">📝 ${order.note}</div>` : ''}
+            ${order.note ? `<div style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">📝 ${order.note}</div>` : ""}
             <div class="order-items">
-              ${order.items.map(item => `
+              ${order.items
+						.map(
+							(item) => `
                 <div class="order-item">
                   <span>${item.product_name} × ${item.quantity}</span>
                   <span>${formatPrice(item.price * item.quantity)}</span>
                 </div>
-              `).join('')}
+              `,
+						)
+						.join("")}
             </div>
             <div class="order-total" style="text-align:right;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:18px;">
               Tổng: ${formatPrice(order.total_amount)}
             </div>
-            ${canCancel(order.status) ? `
+            ${canCancel(order.status)
+						? `
             <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);text-align:right;">
               <button class="btn-danger" onclick="cancelOrder(${order.id})">
                 <i class="fa-solid fa-ban"></i> Hủy đơn hàng
               </button>
-            </div>` : ''}
+            </div>`
+						: ""
+					}
           </div>
         `;
-      } catch (err) {
-        Toast.error(err.message);
-      }
-    }
+			} catch (err) {
+				Toast.error(err.message);
+			}
+		}
 
-    async function cancelOrder(id) {
-      if (!confirm('Bạn có chắc muốn hủy đơn hàng này?')) return;
-      try {
-        await API.cancelOrder(id);
-        Toast.success('Đã hủy đơn hàng');
-        viewOrder(id);
-      } catch (err) {
-        Toast.error(err.message);
-      }
-    }
+		async function cancelOrder(id) {
+			const confirmed = await Confirm.show({
+				title: "Hủy đơn hàng",
+				message: "Bạn có chắc muốn hủy đơn hàng này?",
+				confirmText: "Có",
+				variant: "danger",
+			});
+			if (!confirmed) return;
+			try {
+				await API.cancelOrder(id);
+				Toast.success("Đã hủy đơn hàng");
+				viewOrder(id);
+			} catch (err) {
+				Toast.error(err.message);
+			}
+		}
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      await Auth.init();
-      Auth.updateHeader();
-      await Compare.load();
-      loadOrders();
-    });
-  </script>
+		document.addEventListener("DOMContentLoaded", async () => {
+			await Auth.init();
+			Auth.updateHeader();
+			await Compare.load();
+			loadOrders();
+		});
+	</script>
+	<script src="js/chatbox.js"></script>
 </body>
+
 </html>

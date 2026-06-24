@@ -51,6 +51,16 @@ const API = {
     if (params.sort) q.set('sort', params.sort);
     if (params.page) q.set('page', params.page);
     if (params.limit) q.set('limit', params.limit);
+    if (params.brand) q.set('brand', params.brand);
+    if (params.component_type) q.set('component_type', params.component_type);
+    if (params.cpu) q.set('cpu', params.cpu);
+    if (params.ram) q.set('ram', params.ram);
+    if (params.gpu) q.set('gpu', params.gpu);
+    if (params.disk) q.set('disk', params.disk);
+    // Support both single value and array for price ranges
+    // Use explicit filter to preserve 0 values (e.g. min_price=0 for "Dưới 5 triệu")
+    [params.min_price].flat().filter(v => v !== null && v !== undefined && v !== '').forEach(v => q.append('min_price', v));
+    [params.max_price].flat().filter(v => v !== null && v !== undefined && v !== '').forEach(v => q.append('max_price', v));
     const qs = q.toString();
     return this.request('GET', '/api/products' + (qs ? '?' + qs : ''));
   },
@@ -62,6 +72,12 @@ const API = {
   },
   getCategories() {
     return this.request('GET', '/api/categories');
+  },
+  getFilterOptions(params = {}) {
+    const q = new URLSearchParams();
+    if (params.category) q.set('category', params.category);
+    const qs = q.toString();
+    return this.request('GET', '/api/products/filters' + (qs ? '?' + qs : ''));
   },
 
   // Cart
@@ -100,6 +116,11 @@ const API = {
     return this.request('PUT', '/api/user/password', data);
   },
 
+  // AI Chat
+  chat(message) {
+    return this.request('POST', '/api/chat', { message });
+  },
+
   // Compare
   getCompare() {
     return this.request('GET', '/api/compare');
@@ -109,6 +130,9 @@ const API = {
   },
   removeFromCompare(productId) {
     return this.request('DELETE', '/api/compare/' + productId);
+  },
+  clearCompare() {
+    return this.request('DELETE', '/api/compare');
   },
 
   // Admin
@@ -124,6 +148,9 @@ const API = {
   adminDeleteProduct(id) {
     return this.request('DELETE', '/api/admin/products/' + id);
   },
+  adminToggleProductHidden(id) {
+    return this.request('PUT', '/api/admin/products/' + id + '/toggle-hidden');
+  },
   adminGetOrders() {
     return this.request('GET', '/api/admin/orders');
   },
@@ -132,5 +159,19 @@ const API = {
   },
   adminGetOrderDetail(id) {
     return this.request('GET', '/api/admin/orders/' + id);
+  },
+
+  // Admin filter options
+  adminGetFilterOptions() {
+    return this.request('GET', '/api/admin/filter-options');
+  },
+  adminCreateFilterOption(data) {
+    return this.request('POST', '/api/admin/filter-options', data);
+  },
+  adminUpdateFilterOption(id, data) {
+    return this.request('PUT', '/api/admin/filter-options/' + id, data);
+  },
+  adminDeleteFilterOption(id) {
+    return this.request('DELETE', '/api/admin/filter-options/' + id);
   }
 };

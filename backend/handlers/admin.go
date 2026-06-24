@@ -94,6 +94,37 @@ func AdminDeleteProduct(w http.ResponseWriter, r *http.Request) {
 	middleware.JSON(w, http.StatusOK, map[string]string{"message": "Đã xóa sản phẩm"})
 }
 
+// PUT /api/admin/products/{id}/toggle-hidden — toggle product hidden status
+func AdminToggleProductHidden(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		middleware.JSON(w, http.StatusBadRequest, models.ErrorResponse{Error: "ID không hợp lệ"})
+		return
+	}
+
+	hidden, err := database.ToggleProductHidden(id)
+	if err != nil {
+		if err.Error() == "not found" {
+			middleware.JSON(w, http.StatusNotFound, models.ErrorResponse{Error: "Không tìm thấy sản phẩm"})
+		} else {
+			middleware.JSON(w, http.StatusInternalServerError, models.ErrorResponse{Error: "Lỗi cập nhật sản phẩm"})
+		}
+		return
+	}
+
+	var message string
+	if hidden {
+		message = "Đã ẩn sản phẩm"
+	} else {
+		message = "Đã hiện sản phẩm"
+	}
+	middleware.JSON(w, http.StatusOK, map[string]interface{}{
+		"message": message,
+		"hidden":  hidden,
+	})
+}
+
 // GET /api/admin/orders — all orders for admin management
 func AdminGetOrders(w http.ResponseWriter, r *http.Request) {
 	orders, err := database.GetAllOrders()
@@ -153,4 +184,103 @@ func AdminUpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	middleware.JSON(w, http.StatusOK, map[string]string{"message": "Đã cập nhật trạng thái"})
+}
+
+// GET /api/admin/filter-options
+func AdminGetFilterOptions(w http.ResponseWriter, r *http.Request) {
+	opts, err := database.GetCustomFilterOptions()
+	if err != nil {
+		middleware.JSON(w, http.StatusInternalServerError, models.ErrorResponse{Error: "Lỗi tải tuỳ chọn bộ lọc"})
+		return
+	}
+	middleware.JSON(w, http.StatusOK, opts)
+}
+
+// POST /api/admin/filter-options
+func AdminCreateFilterOption(w http.ResponseWriter, r *http.Request) {
+	var req models.FilterOptionRequest
+	if err := middleware.ParseJSON(r, &req); err != nil {
+		middleware.JSON(w, http.StatusBadRequest, models.ErrorResponse{Error: "Dữ liệu không hợp lệ"})
+		return
+	}
+	req.Type = strings.TrimSpace(req.Type)
+	req.Value = strings.TrimSpace(req.Value)
+	if req.Type == "" || req.Value == "" {
+		middleware.JSON(w, http.StatusBadRequest, models.ErrorResponse{Error: "Loại và giá trị không được để trống"})
+		return
+	}
+	validTypes := map[string]bool{"brand": true, "cpu": true, "ram": true, "gpu": true, "disk": true, "component_type": true}
+	if !validTypes[req.Type] {
+middleware.JSON(w, http.StatusBadRequest, models.ErrorResponse{Error: "Loại không hợp lệ"})
+			return
+		}
+		opt, err := database.CreateFilterOption(req.Type, req.Value)
+	if err != nil {
+		if strings.Contains(err.Error(), "unique") || strings.Contains(err.Error(), "duplicate") {
+			middleware.JSON(w, http.StatusConflict, models.ErrorResponse{Error: "Giá trị này đã tồn tại"})
+			return
+		}
+		middleware.JSON(w, http.StatusInternalServerError, models.ErrorResponse{Error: "Lỗi thêm tuỳ chọn"})
+		return
+	}
+	middleware.JSON(w, http.StatusCreated, opt)
+}
+
+// DELETE /api/admin/filter-options/{id}
+func AdminDeleteFilterOption(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		middleware.JSON(w, http.StatusBadRequest, models.ErrorResponse{Error: "ID không hợp lệ"})
+		return
+	}
+	if err := database.DeleteFilterOption(id); err != nil {
+		if err.Error() == "not found" {
+			middleware.JSON(w, http.StatusNotFound, models.ErrorResponse{Error: "Không tìm thấy"})
+			return
+		}
+		middleware.JSON(w, http.StatusInternalServerError, models.ErrorResponse{Error: "Lỗi xóa"})
+		return
+	}
+	middleware.JSON(w, http.StatusOK, map[string]string{"message": "Đã xóa"})
+}
+
+// PUT /api/admin/filter-options/{id}
+func AdminUpdateFilterOption(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		middleware.JSON(w, http.StatusBadRequest, models.ErrorResponse{Error: "ID không hợp lệ"})
+		return
+	}
+	var req models.FilterOptionRequest
+	if err := middleware.ParseJSON(r, &req); err != nil {
+		middleware.JSON(w, http.StatusBadRequest, models.ErrorResponse{Error: "Dữ liệu không hợp lệ"})
+		return
+	}
+	req.Type = strings.TrimSpace(req.Type)
+	req.Value = strings.TrimSpace(req.Value)
+	if req.Type == "" || req.Value == "" {
+		middleware.JSON(w, http.StatusBadRequest, models.ErrorResponse{Error: "Loại và giá trị không được để trống"})
+		return
+	}
+	validTypes := map[string]bool{"brand": true, "cpu": true, "ram": true, "gpu": true, "disk": true, "component_type": true}
+	if !validTypes[req.Type] {
+middleware.JSON(w, http.StatusBadRequest, models.ErrorResponse{Error: "Loại không hợp lệ"})
+			return
+		}
+		opt, err := database.UpdateFilterOption(id, req.Type, req.Value)
+	if err != nil {
+		if err.Error() == "not found" {
+			middleware.JSON(w, http.StatusNotFound, models.ErrorResponse{Error: "Không tìm thấy"})
+			return
+		}
+		if strings.Contains(err.Error(), "unique") || strings.Contains(err.Error(), "duplicate") {
+			middleware.JSON(w, http.StatusConflict, models.ErrorResponse{Error: "Giá trị này đã tồn tại"})
+			return
+		}
+		middleware.JSON(w, http.StatusInternalServerError, models.ErrorResponse{Error: "Lỗi cập nhật"})
+		return
+	}
+	middleware.JSON(w, http.StatusOK, opt)
 }
